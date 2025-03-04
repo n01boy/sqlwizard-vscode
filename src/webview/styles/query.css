@@ -1,0 +1,62 @@
+.sql-result {
+    background: var(--vscode-editor-background);
+    color: var(--vscode-editor-foreground);
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    font-family: var(--vscode-editor-font-family);
+    white-space: pre-wrap;
+}
+
+.explanation {
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--vscode-textBlockQuote-background);
+    border-left: 4px solid var(--vscode-textBlockQuote-border);
+    color: var(--vscode-foreground);
+}
+
+#prompt {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.result-section h3 {
+    color: var(--vscode-foreground);
+    font-size: 1.1em;
+    margin: 1em 0;
+}
+
+.button-group {
+    justify-content: flex-start;
+}
+
+.button-group vscode-button {
+    min-width: 100px;
+}
+
+/* ローディングインジケーター */
+.loading-container {
+    display: none;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(128, 128, 128, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--vscode-button-background);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-text {
+    margin-top: 10px;
+    color: var(--vscode-foreground);
+}

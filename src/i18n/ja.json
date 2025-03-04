@@ -1,0 +1,81 @@
+{
+    "settings": {
+        "title": "設定",
+        "language": {
+            "label": "言語",
+            "en": "英語",
+            "ja": "日本語"
+        },
+        "database": {
+            "title": "データベース設定",
+            "add": "データベースを追加",
+            "edit": "編集",
+            "delete": "削除",
+            "name": "名前",
+            "provider": "プロバイダー",
+            "host": "ホスト",
+            "port": "ポート",
+            "user": "ユーザー",
+            "password": "パスワード",
+            "database": "データベース",
+            "search": "検索",
+            "create": "新規作成",
+            "save": "保存",
+            "cancel": "キャンセル",
+            "back": "戻る",
+            "searchPlaceholder": "名前またはホストで検索...",
+            "nameRequired": "名前を入力してください",
+            "hostRequired": "ホストを入力してください",
+            "portRequired": "ポートを入力してください",
+            "portInvalid": "ポートは数値で入力してください",
+            "userRequired": "ユーザーを入力してください",
+            "databaseRequired": "データベース名を入力してください",
+            "ssh": {
+                "title": "SSHポートフォワード",
+                "host": "SSHホスト",
+                "port": "SSHポート",
+                "username": "ユーザー名",
+                "privateKey": "秘密鍵",
+                "passphrase": "パスフレーズ"
+            }
+        },
+        "ai": {
+            "title": "AI設定",
+            "model": "モデル",
+            "apiKey": "APIキー",
+            "save": "設定を保存"
+        }
+    },
+    "query": {
+        "title": "クエリジェネレーター",
+        "database": "データベースを選択",
+        "prompt": "プロンプトを入力",
+        "generate": "SQL生成",
+        "copy": "SQLをコピー",
+        "execute": "実行",
+        "loading": "SQL生成中...",
+        "openInEditor": "エディタで開く"
+    },
+    "messages": {
+        "success": {
+            "saved": "設定を保存しました",
+            "connected": "データベースに接続しました",
+            "generated": "SQLを生成しました",
+            "copied": "SQLをクリップボードにコピーしました",
+            "executed": "SQLを実行しました",
+            "openedInEditor": "SQLをエディタで開きました"
+        },
+        "error": {
+            "connection": "データベースへの接続に失敗しました",
+            "generation": "SQLの生成に失敗しました",
+            "validation": "必須項目を入力してください",
+            "copy": "SQLのコピーに失敗しました",
+            "execution": "SQLの実行に失敗しました"
+        },
+        "confirm": {
+            "deleteDatabase": "このデータベースを削除してもよろしいですか？",
+            "yes": "はい",
+            "no": "いいえ"
+        }
+    }
+}

@@ -1,0 +1,65 @@
+.container {
+    padding: 20px;
+}
+
+.section {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 10px;
+}
+
+button.vscode-button {
+    display: inline-block;
+    padding: 4px 12px;
+    margin: 4px 0;
+    border: none;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+button.vscode-button:hover {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+select {
+    display: block;
+    width: 100%;
+    margin: 4px 0;
+    padding: 4px;
+    background-color: var(--vscode-dropdown-background);
+    color: var(--vscode-dropdown-foreground);
+    border: 1px solid var(--vscode-dropdown-border);
+}
+
+input[type="text"],
+input[type="password"] {
+    display: block;
+    width: 100%;
+    margin: 4px 0;
+    padding: 4px;
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border);
+}
+
+textarea {
+    display: block;
+    width: 100%;
+    margin: 4px 0;
+    padding: 4px;
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border);
+    min-height: 100px;
+    resize: vertical;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}

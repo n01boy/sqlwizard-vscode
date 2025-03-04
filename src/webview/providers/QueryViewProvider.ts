@@ -1,0 +1,280 @@
+import * as vscode from 'vscode';
+import { StorageService } from '../../services/StorageService';
+import { I18nService } from '../../services/I18nService';
+
+export class QueryViewProvider implements vscode.WebviewViewProvider {
+    private view?: vscode.WebviewView;
+
+    constructor(private readonly extensionUri: vscode.Uri) {}
+
+    resolveWebviewView(
+        webviewView: vscode.WebviewView,
+        context: vscode.WebviewViewResolveContext,
+        token: vscode.CancellationToken
+    ) {
+        this.view = webviewView;
+
+        webviewView.webview.options = {
+            enableScripts: true,
+            localResourceRoots: [this.extensionUri]
+        };
+
+        webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
+
+        this.setWebviewMessageListener(webviewView.webview);
+        
+        // 初期データの送信
+        this.updateDatabases();
+    }
+
+    private getHtmlForWebview(webview: vscode.Webview) {
+        const i18n = I18nService.getInstance();
+        const commonStylesUri = this.getUri(webview, ['src', 'webview', 'styles', 'common.css']);
+        const queryStylesUri = this.getUri(webview, ['src', 'webview', 'styles', 'query.css']);
+
+        return `
+            <!DOCTYPE html>
+            <html lang="${i18n.getCurrentLanguage()}">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <link rel="stylesheet" href="${commonStylesUri}">
+                <link rel="stylesheet" href="${queryStylesUri}">
+                <title>${i18n.t('query.title')}</title>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="section">
+                        <div class="form-group">
+                            <select id="database">
+                                <option value="">${i18n.t('query.database')}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="form-group">
+                            <textarea
+                                id="prompt"
+                                placeholder="${i18n.t('query.prompt')}"
+                                rows="5"
+                            ></textarea>
+                        </div>
+                        <button id="generate" class="vscode-button">
+                            ${i18n.t('query.generate')}
+                        </button>
+                        <div class="loading-container" id="loading-container">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text">${i18n.t('query.loading')}</div>
+                        </div>
+                    </div>
+
+                    <div class="section result-section" id="result-section" style="display: none;">
+                        <h3>SQL</h3>
+                        <div class="sql-result" id="sql-result"></div>
+                        <div class="button-group">
+                            <button id="copy" class="vscode-button">
+                                ${i18n.t('query.copy')}
+                            </button>
+                            <button id="execute" class="vscode-button">
+                                ${i18n.t('query.execute')}
+                            </button>
+                            <button id="open-in-editor" class="vscode-button">
+                                ${i18n.t('query.openInEditor')}
+                            </button>
+                        </div>
+                        <h3>Explanation</h3>
+                        <div class="explanation" id="explanation"></div>
+                    </div>
+                </div>
+
+                <script>
+                    const vscode = acquireVsCodeApi();
+                    let currentSQL = '';
+
+                    // Database selector
+                    const databaseDropdown = document.getElementById('database');
+                    const promptTextarea = document.getElementById('prompt');
+                    const generateButton = document.getElementById('generate');
+                    const resultSection = document.getElementById('result-section');
+                    const sqlResult = document.getElementById('sql-result');
+                    const explanation = document.getElementById('explanation');
+                    const copyButton = document.getElementById('copy');
+                    const executeButton = document.getElementById('execute');
+                    const openInEditorButton = document.getElementById('open-in-editor');
+                    const loadingContainer = document.getElementById('loading-container');
+
+                    // ローディング表示の切り替え
+                    function showLoading() {
+                        loadingContainer.style.display = 'block';
+                        generateButton.disabled = true;
+                    }
+
+                    function hideLoading() {
+                        loadingContainer.style.display = 'none';
+                        generateButton.disabled = false;
+                    }
+
+                    generateButton.addEventListener('click', () => {
+                        if (!databaseDropdown.value) {
+                            vscode.postMessage({
+                                command: 'showError',
+                                message: '${i18n.t('messages.error.validation')}'
+                            });
+                            return;
+                        }
+
+                        // ローディング表示
+                        showLoading();
+                        resultSection.style.display = 'none';
+
+                        vscode.postMessage({
+                            command: 'generateSQL',
+                            databaseId: databaseDropdown.value,
+                            prompt: promptTextarea.value
+                        });
+                    });
+
+                    copyButton.addEventListener('click', () => {
+                        vscode.postMessage({
+                            command: 'copySQL',
+                            sql: currentSQL
+                        });
+                    });
+
+                    executeButton.addEventListener('click', () => {
+                        vscode.postMessage({
+                            command: 'executeSQL',
+                            databaseId: databaseDropdown.value,
+                            sql: currentSQL
+                        });
+                    });
+
+                    openInEditorButton.addEventListener('click', () => {
+                        vscode.postMessage({
+                            command: 'openSQLInEditor',
+                            sql: currentSQL
+                        });
+                    });
+
+                    window.addEventListener('message', (event) => {
+                        const message = event.data;
+                        switch (message.command) {
+                            case 'updateDatabases':
+                                databaseDropdown.innerHTML = \`
+                                    <option value="">${i18n.t('query.database')}</option>
+                                \`;
+                                message.databases.forEach(db => {
+                                    const option = document.createElement('option');
+                                    option.value = db.id;
+                                    option.textContent = db.name;
+                                    databaseDropdown.appendChild(option);
+                                });
+                                break;
+
+                            case 'showResult':
+                                // ローディング非表示
+                                hideLoading();
+                                
+                                currentSQL = message.result.sql;
+                                sqlResult.textContent = message.result.sql;
+                                explanation.textContent = message.result.explanation;
+                                resultSection.style.display = 'block';
+                                break;
+                                
+                            case 'showError':
+                                // エラー時もローディング非表示
+                                hideLoading();
+                                break;
+                        }
+                    });
+                </script>
+            </body>
+            </html>
+        `;
+    }
+
+    private getUri(webview: vscode.Webview, pathList: string[]) {
+        return webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, ...pathList));
+    }
+
+    private setWebviewMessageListener(webview: vscode.Webview) {
+        webview.onDidReceiveMessage(
+            async (message: any) => {
+                const i18n = I18nService.getInstance();
+
+                switch (message.command) {
+                    case 'generateSQL':
+                        try {
+                            const result = await vscode.commands.executeCommand('sqlwizard.generateSQL', {
+                                databaseId: message.databaseId,
+                                prompt: message.prompt
+                            });
+                            webview.postMessage({
+                                command: 'showResult',
+                                result
+                            });
+                        } catch (error) {
+                            vscode.window.showErrorMessage(i18n.t('messages.error.generation'));
+                            
+                            // エラー通知をWebviewに送信してローディングを非表示にする
+                            webview.postMessage({
+                                command: 'showError',
+                                message: i18n.t('messages.error.generation')
+                            });
+                        }
+                        break;
+
+                    case 'copySQL':
+                        try {
+                            await vscode.env.clipboard.writeText(message.sql);
+                            vscode.window.showInformationMessage(i18n.t('messages.success.copied'));
+                        } catch (error) {
+                            vscode.window.showErrorMessage(i18n.t('messages.error.copy'));
+                        }
+                        break;
+
+                    case 'executeSQL':
+                        try {
+                            await vscode.commands.executeCommand('sqlwizard.executeSQL', {
+                                databaseId: message.databaseId,
+                                sql: message.sql
+                            });
+                        } catch (error) {
+                            vscode.window.showErrorMessage(i18n.t('messages.error.execution'));
+                        }
+                        break;
+
+                    case 'showError':
+                        vscode.window.showErrorMessage(message.message);
+                        break;
+                        
+                    case 'openSQLInEditor':
+                        try {
+                            await vscode.commands.executeCommand('sqlwizard.openSQLInEditor', message.sql);
+                        } catch (error) {
+                            vscode.window.showErrorMessage(i18n.t('messages.error.validation'));
+                        }
+                        break;
+                }
+            }
+        );
+    }
+
+    updateDatabases() {
+        if (this.view) {
+            this.view.webview.postMessage({
+                command: 'updateDatabases',
+                databases: StorageService.getInstance().getDatabases()
+            });
+        }
+    }
+
+    updateLanguage(language: string) {
+        if (this.view) {
+            // クエリパネルは言語変更時に再読み込みが必要
+            this.view.webview.html = this.getHtmlForWebview(this.view.webview);
+            this.updateDatabases();
+        }
+    }
+}

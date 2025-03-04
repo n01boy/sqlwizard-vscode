@@ -1,0 +1,127 @@
+{
+  "name": "sqlwizard-vscode",
+  "displayName": "SQL Wizard",
+  "description": "AI-powered SQL generator with database management",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.97.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:sqlwizard.settingsView",
+    "onView:sqlwizard.queryView",
+    "onCommand:sqlwizard.openSettings",
+    "onCommand:sqlwizard.openQuery"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "sqlwizard.openSettings",
+        "title": "Open Settings",
+        "category": "SQL Wizard"
+      },
+      {
+        "command": "sqlwizard.openQuery",
+        "title": "Open Query Generator",
+        "category": "SQL Wizard"
+      },
+      {
+        "command": "sqlwizard.changeLanguage",
+        "title": "Change Language",
+        "category": "SQL Wizard"
+      },
+      {
+        "command": "sqlwizard.addDatabase",
+        "title": "Add Database",
+        "category": "SQL Wizard"
+      },
+      {
+        "command": "sqlwizard.editDatabase",
+        "title": "Edit Database",
+        "category": "SQL Wizard"
+      },
+      {
+        "command": "sqlwizard.deleteDatabase",
+        "title": "Delete Database",
+        "category": "SQL Wizard"
+      },
+      {
+        "command": "sqlwizard.updateAIConfig",
+        "title": "Update AI Configuration",
+        "category": "SQL Wizard"
+      },
+      {
+        "command": "sqlwizard.generateSQL",
+        "title": "Generate SQL",
+        "category": "SQL Wizard"
+      },
+      {
+        "command": "sqlwizard.executeSQL",
+        "title": "Execute SQL",
+        "category": "SQL Wizard"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sqlwizard",
+          "title": "SQL Wizard",
+          "icon": "media/database.svg"
+        }
+      ]
+    },
+    "views": {
+      "sqlwizard": [
+        {
+          "type": "webview",
+          "id": "sqlwizard.settingsView",
+          "name": "Settings"
+        },
+        {
+          "type": "webview",
+          "id": "sqlwizard.queryView",
+          "name": "Query Generator"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "sqlwizard.settingsView",
+        "contents": "Loading settings..."
+      },
+      {
+        "view": "sqlwizard.queryView",
+        "contents": "Loading query generator..."
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "@vscode/webview-ui-toolkit": "^1.4.0",
+    "i18next": "^23.10.0",
+    "mysql2": "^3.9.0"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.97.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.25.0",
+    "@typescript-eslint/parser": "^8.25.0",
+    "eslint": "^9.21.0",
+    "typescript": "^5.7.3",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "@types/mysql2": "^2.15.0",
+    "@types/i18next": "^13.0.0"
+  }
+}
