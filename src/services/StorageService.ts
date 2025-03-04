@@ -1,14 +1,17 @@
 import * as vscode from 'vscode';
-import { Settings, DatabaseConfig, AIConfig } from '../models/interfaces';
+import { Settings, DatabaseConfig, AIConfig, PromptHistoryItem } from '../models/interfaces';
 
 export class StorageService {
     private static instance: StorageService;
     private context: vscode.ExtensionContext;
     private settings: Settings;
+    private promptHistory: PromptHistoryItem[] = [];
+    private readonly MAX_HISTORY_ITEMS = 10;
 
     private constructor(context: vscode.ExtensionContext) {
         this.context = context;
         this.settings = this.loadSettings();
+        this.promptHistory = this.loadPromptHistory();
     }
 
     static initialize(context: vscode.ExtensionContext): StorageService {
@@ -39,8 +42,17 @@ export class StorageService {
         return settings || defaultSettings;
     }
 
+    private loadPromptHistory(): PromptHistoryItem[] {
+        const history = this.context.globalState.get<PromptHistoryItem[]>('sqlwizard.promptHistory');
+        return history || [];
+    }
+
     async saveSettings(): Promise<void> {
         await this.context.globalState.update('sqlwizard.settings', this.settings);
+    }
+
+    async savePromptHistory(): Promise<void> {
+        await this.context.globalState.update('sqlwizard.promptHistory', this.promptHistory);
     }
 
     getLanguage(): string {
@@ -82,5 +94,43 @@ export class StorageService {
     async updateAIConfig(config: AIConfig): Promise<void> {
         this.settings.aiConfig = config;
         await this.saveSettings();
+    }
+
+    // プロンプト履歴の取得
+    getPromptHistory(): PromptHistoryItem[] {
+        return this.promptHistory;
+    }
+
+    // プロンプト履歴の追加
+    async addPromptHistory(prompt: string, databaseId: string): Promise<void> {
+        // データベース名を取得
+        const database = this.settings.databases.find(db => db.id === databaseId);
+        if (!database) {
+            return;
+        }
+
+        const historyItem: PromptHistoryItem = {
+            id: Date.now().toString(),
+            prompt,
+            databaseId,
+            databaseName: database.name,
+            timestamp: Date.now()
+        };
+
+        // 先頭に追加
+        this.promptHistory.unshift(historyItem);
+
+        // 最大数を超えた場合は古いものを削除
+        if (this.promptHistory.length > this.MAX_HISTORY_ITEMS) {
+            this.promptHistory = this.promptHistory.slice(0, this.MAX_HISTORY_ITEMS);
+        }
+
+        await this.savePromptHistory();
+    }
+
+    // プロンプト履歴のクリア
+    async clearPromptHistory(): Promise<void> {
+        this.promptHistory = [];
+        await this.savePromptHistory();
     }
 }

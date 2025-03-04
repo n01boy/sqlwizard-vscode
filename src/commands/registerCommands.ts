@@ -15,12 +15,38 @@ export function registerCommands(
     const i18nService = I18nService.getInstance();
     const storageService = StorageService.getInstance();
 
+    // ストリーミングエディタの参照を保持
+    let streamingEditor: vscode.TextEditor | undefined;
+    let streamingDocument: vscode.TextDocument | undefined;
+
     const commands = [
         vscode.commands.registerCommand('sqlwizard.openSettings', () => {
             vscode.commands.executeCommand('workbench.view.extension.sqlwizard');
             setTimeout(() => {
                 vscode.commands.executeCommand('sqlwizard.settingsView.focus');
             }, 300);
+        }),
+
+        // ストリーミングエディタを準備するコマンド
+        vscode.commands.registerCommand('sqlwizard.prepareStreamingEditor', async () => {
+            // 空のエディタを開く
+            streamingDocument = await vscode.workspace.openTextDocument({
+                content: '',
+                language: 'sql'
+            });
+            streamingEditor = await vscode.window.showTextDocument(streamingDocument);
+            return streamingEditor;
+        }),
+
+        // ストリーミングエディタにテキストを追加するコマンド
+        vscode.commands.registerCommand('sqlwizard.appendToStreamingEditor', async (text: string) => {
+            if (streamingEditor && streamingDocument) {
+                await streamingEditor.edit(editBuilder => {
+                    const lastLine = streamingDocument!.lineCount - 1;
+                    const lastChar = streamingDocument!.lineAt(lastLine).text.length;
+                    editBuilder.insert(new vscode.Position(lastLine, lastChar), text);
+                });
+            }
         }),
 
         vscode.commands.registerCommand('sqlwizard.openQuery', () => {
@@ -154,6 +180,13 @@ export function registerCommands(
 
                 await dbService.connect(dbConfig);
                 const schema = await dbService.fetchSchema(params.databaseId);
+                
+                // プロンプト履歴に追加
+                await storageService.addPromptHistory(params.prompt, params.databaseId);
+                
+                // プロンプト履歴を更新
+                queryViewProvider.updatePromptHistory();
+                
                 const result = await aiService.generateSQL({
                     ...params,
                     schema
@@ -191,7 +224,8 @@ export function registerCommands(
 
         vscode.commands.registerCommand('sqlwizard.openSQLInEditor', async (sql: string) => {
             try {
-                // 新しいエディタを開く
+                // ストリーミングAPIを使用する場合は、このコマンドは単にSQLをエディタに開くだけ
+                // ストリーミングはAIService.makeStreamingRequestで処理される
                 const document = await vscode.workspace.openTextDocument({
                     content: sql,
                     language: 'sql'

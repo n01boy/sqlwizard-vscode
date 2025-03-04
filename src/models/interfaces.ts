@@ -71,3 +71,11 @@ export interface QueryGenerationResponse {
     sql: string;
     explanation: string;
 }
+
+export interface PromptHistoryItem {
+    id: string;
+    prompt: string;
+    databaseId: string;
+    databaseName: string;
+    timestamp: number;
+}

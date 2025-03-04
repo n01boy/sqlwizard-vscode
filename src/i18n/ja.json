@@ -70,7 +70,13 @@
             "generation": "SQLの生成に失敗しました",
             "validation": "必須項目を入力してください",
             "copy": "SQLのコピーに失敗しました",
-            "execution": "SQLの実行に失敗しました"
+            "execution": "SQLの実行に失敗しました",
+            "emptyPrompt": "プロンプトを入力してください",
+            "apiConnection": "API接続エラーです。インターネット接続とAPIキーを確認してください",
+            "responseFormat": "APIからの応答形式が無効です",
+            "timeout": "リクエストがタイムアウトしました。後でもう一度お試しください",
+            "unknown": "不明なエラーが発生しました",
+            "responseLanguage": "日本語で返信してください。"
         },
         "confirm": {
             "deleteDatabase": "このデータベースを削除してもよろしいですか？",

@@ -70,7 +70,13 @@
             "generation": "Failed to generate SQL",
             "validation": "Please fill in all required fields",
             "copy": "Failed to copy SQL to clipboard",
-            "execution": "Failed to execute SQL"
+            "execution": "Failed to execute SQL",
+            "emptyPrompt": "Please enter a prompt",
+            "apiConnection": "API connection error. Please check your internet connection and API key",
+            "responseFormat": "Invalid response format from the API",
+            "timeout": "Request timed out. Please try again later",
+            "unknown": "An unknown error occurred",
+            "responseLanguage": "Please provide your response in English."
         },
         "confirm": {
             "deleteDatabase": "Are you sure you want to delete this database?",

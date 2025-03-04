@@ -25,12 +25,14 @@ export class QueryViewProvider implements vscode.WebviewViewProvider {
         
         // 初期データの送信
         this.updateDatabases();
+        this.updatePromptHistory();
     }
 
     private getHtmlForWebview(webview: vscode.Webview) {
         const i18n = I18nService.getInstance();
         const commonStylesUri = this.getUri(webview, ['src', 'webview', 'styles', 'common.css']);
         const queryStylesUri = this.getUri(webview, ['src', 'webview', 'styles', 'query.css']);
+        const scriptUri = this.getUri(webview, ['src', 'webview', 'query', 'queryScript.js']);
 
         return `
             <!DOCTYPE html>
@@ -69,126 +71,17 @@ export class QueryViewProvider implements vscode.WebviewViewProvider {
                         </div>
                     </div>
 
-                    <div class="section result-section" id="result-section" style="display: none;">
-                        <h3>SQL</h3>
-                        <div class="sql-result" id="sql-result"></div>
-                        <div class="button-group">
-                            <button id="copy" class="vscode-button">
-                                ${i18n.t('query.copy')}
-                            </button>
-                            <button id="execute" class="vscode-button">
-                                ${i18n.t('query.execute')}
-                            </button>
-                            <button id="open-in-editor" class="vscode-button">
-                                ${i18n.t('query.openInEditor')}
-                            </button>
-                        </div>
-                        <h3>Explanation</h3>
-                        <div class="explanation" id="explanation"></div>
+                    <!-- プロンプト履歴セクション -->
+                    <div class="section prompt-history-section">
+                        <h3>プロンプト履歴</h3>
+                        <ul id="prompt-history" class="prompt-history-list">
+                            <!-- 履歴はJavaScriptで動的に追加 -->
+                        </ul>
                     </div>
                 </div>
 
-                <script>
-                    const vscode = acquireVsCodeApi();
-                    let currentSQL = '';
-
-                    // Database selector
-                    const databaseDropdown = document.getElementById('database');
-                    const promptTextarea = document.getElementById('prompt');
-                    const generateButton = document.getElementById('generate');
-                    const resultSection = document.getElementById('result-section');
-                    const sqlResult = document.getElementById('sql-result');
-                    const explanation = document.getElementById('explanation');
-                    const copyButton = document.getElementById('copy');
-                    const executeButton = document.getElementById('execute');
-                    const openInEditorButton = document.getElementById('open-in-editor');
-                    const loadingContainer = document.getElementById('loading-container');
-
-                    // ローディング表示の切り替え
-                    function showLoading() {
-                        loadingContainer.style.display = 'block';
-                        generateButton.disabled = true;
-                    }
-
-                    function hideLoading() {
-                        loadingContainer.style.display = 'none';
-                        generateButton.disabled = false;
-                    }
-
-                    generateButton.addEventListener('click', () => {
-                        if (!databaseDropdown.value) {
-                            vscode.postMessage({
-                                command: 'showError',
-                                message: '${i18n.t('messages.error.validation')}'
-                            });
-                            return;
-                        }
-
-                        // ローディング表示
-                        showLoading();
-                        resultSection.style.display = 'none';
-
-                        vscode.postMessage({
-                            command: 'generateSQL',
-                            databaseId: databaseDropdown.value,
-                            prompt: promptTextarea.value
-                        });
-                    });
-
-                    copyButton.addEventListener('click', () => {
-                        vscode.postMessage({
-                            command: 'copySQL',
-                            sql: currentSQL
-                        });
-                    });
-
-                    executeButton.addEventListener('click', () => {
-                        vscode.postMessage({
-                            command: 'executeSQL',
-                            databaseId: databaseDropdown.value,
-                            sql: currentSQL
-                        });
-                    });
-
-                    openInEditorButton.addEventListener('click', () => {
-                        vscode.postMessage({
-                            command: 'openSQLInEditor',
-                            sql: currentSQL
-                        });
-                    });
-
-                    window.addEventListener('message', (event) => {
-                        const message = event.data;
-                        switch (message.command) {
-                            case 'updateDatabases':
-                                databaseDropdown.innerHTML = \`
-                                    <option value="">${i18n.t('query.database')}</option>
-                                \`;
-                                message.databases.forEach(db => {
-                                    const option = document.createElement('option');
-                                    option.value = db.id;
-                                    option.textContent = db.name;
-                                    databaseDropdown.appendChild(option);
-                                });
-                                break;
-
-                            case 'showResult':
-                                // ローディング非表示
-                                hideLoading();
-                                
-                                currentSQL = message.result.sql;
-                                sqlResult.textContent = message.result.sql;
-                                explanation.textContent = message.result.explanation;
-                                resultSection.style.display = 'block';
-                                break;
-                                
-                            case 'showError':
-                                // エラー時もローディング非表示
-                                hideLoading();
-                                break;
-                        }
-                    });
-                </script>
+                <!-- 外部JavaScriptファイルを読み込む -->
+                <script src="${scriptUri}"></script>
             </body>
             </html>
         `;
@@ -275,6 +168,16 @@ export class QueryViewProvider implements vscode.WebviewViewProvider {
             // クエリパネルは言語変更時に再読み込みが必要
             this.view.webview.html = this.getHtmlForWebview(this.view.webview);
             this.updateDatabases();
+        }
+    }
+
+    // プロンプト履歴を更新
+    updatePromptHistory() {
+        if (this.view) {
+            this.view.webview.postMessage({
+                command: 'updatePromptHistory',
+                history: StorageService.getInstance().getPromptHistory()
+            });
         }
     }
 }

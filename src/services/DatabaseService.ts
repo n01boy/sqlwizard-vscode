@@ -120,14 +120,30 @@ export class DatabaseService {
         for (const row of indexRows) {
             const indexName = row.Key_name;
             if (!indexMap.has(indexName)) {
+                // 基本的なインデックス情報
+                const indexType = row.Key_name === 'PRIMARY' ? 'PRIMARY' :
+                                 row.Non_unique === 0 ? 'UNIQUE' :
+                                 row.Index_type === 'FULLTEXT' ? 'FULLTEXT' : 'INDEX';
+                
+                // 追加情報をコメントに含める
+                const additionalInfo = [
+                    `Cardinality: ${row.Cardinality || 'N/A'}`,
+                    `Null: ${row.Null === 'YES' ? 'Allowed' : 'Not Allowed'}`,
+                    `Collation: ${row.Collation || 'N/A'}`,
+                    `Sub_part: ${row.Sub_part || 'N/A'}`
+                ].filter(info => !info.endsWith('N/A')).join(', ');
+                
+                // 既存のコメントと追加情報を結合
+                const comment = row.Index_comment
+                    ? `${row.Index_comment}. ${additionalInfo}`
+                    : additionalInfo;
+                
                 indexMap.set(indexName, {
                     name: indexName,
                     columns: [],
-                    type: row.Key_name === 'PRIMARY' ? 'PRIMARY' :
-                          row.Non_unique === 0 ? 'UNIQUE' :
-                          row.Index_type === 'FULLTEXT' ? 'FULLTEXT' : 'INDEX',
+                    type: indexType,
                     method: row.Index_type.toUpperCase() as 'BTREE' | 'HASH',
-                    comment: row.Index_comment || undefined
+                    comment: comment || undefined
                 });
             }
             indexMap.get(indexName)!.columns.push(row.Column_name);
