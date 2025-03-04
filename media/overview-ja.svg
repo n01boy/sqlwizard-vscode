@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="400" y="50" font-family="Arial" font-size="24" text-anchor="middle" font-weight="bold" fill="#333">SQL Wizard for VSCode</text>
+  
+  <!-- MySQL -->
+  <rect x="100" y="150" width="150" height="80" rx="10" ry="10" fill="#4479A1" stroke="#333" stroke-width="2"/>
+  <text x="175" y="195" font-family="Arial" font-size="18" text-anchor="middle" fill="white">MySQL</text>
+  
+  <!-- Table Information -->
+  <rect x="350" y="120" width="150" height="60" rx="10" ry="10" fill="#f0f0f0" stroke="#333" stroke-width="2"/>
+  <text x="425" y="155" font-family="Arial" font-size="14" text-anchor="middle" fill="#333">テーブル情報</text>
+  
+  <!-- Prompt -->
+  <rect x="350" y="200" width="150" height="60" rx="10" ry="10" fill="#f0f0f0" stroke="#333" stroke-width="2"/>
+  <text x="425" y="235" font-family="Arial" font-size="14" text-anchor="middle" fill="#333">プロンプト</text>
+  
+  <!-- Anthropic API -->
+  <rect x="600" y="150" width="150" height="80" rx="10" ry="10" fill="#6B4FBB" stroke="#333" stroke-width="2"/>
+  <text x="675" y="195" font-family="Arial" font-size="18" text-anchor="middle" fill="white">Anthropic API</text>
+  
+  <!-- Generated SQL -->
+  <rect x="600" y="300" width="150" height="80" rx="10" ry="10" fill="#4CAF50" stroke="#333" stroke-width="2"/>
+  <text x="675" y="345" font-family="Arial" font-size="18" text-anchor="middle" fill="white">SQL</text>
+  <text x="675" y="370" font-family="Arial" font-size="12" text-anchor="middle" fill="white">最適化されたクエリ</text>
+  
+  <!-- Arrows -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+  </defs>
+  
+  <!-- MySQL → Table Information -->
+  <line x1="250" y1="180" x2="350" y2="150" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="290" y="145" font-family="Arial" font-size="12" fill="#333">取得</text>
+  
+  <!-- Table Information + Prompt → Anthropic API -->
+  <line x1="500" y1="150" x2="600" y2="180" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="230" x2="600" y2="190" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="540" y="170" font-family="Arial" font-size="12" fill="#333">SQL生成</text>
+  
+  <!-- Anthropic API → SQL -->
+  <line x1="675" y1="230" x2="675" y2="300" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="690" y="265" font-family="Arial" font-size="12" fill="#333">出力</text>
+  
+  <!-- Description Text -->
+  <text x="400" y="420" font-family="Arial" font-size="16" text-anchor="middle" fill="#666">
+    MySQLからテーブル、カラム、インデックス、外部キーを取得し、
+  </text>
+  <text x="400" y="450" font-family="Arial" font-size="16" text-anchor="middle" fill="#666">
+    プロンプトでAIにアクセスして、SQLを生成します
+  </text>
+</svg>

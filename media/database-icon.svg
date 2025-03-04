@@ -1,30 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <!-- データベースの基本形状 - 3段構造 -->
+    <!-- データベースの基本形状 - 2段構造（青い部分を削除し、輪郭線だけ残す） -->
     <path
         d="M4 7C4 5.34315 7.58172 4 12 4C16.4183 4 20 5.34315 20 7C20 8.65685 16.4183 10 12 10C7.58172 10 4 8.65685 4 7Z"
-        fill="#2B5D8E" />
+        fill="none" stroke="#FFFFFF" stroke-width="0.7" />
     <path
-        d="M4 12C4 13.6569 7.58172 15 12 15C16.4183 15 20 13.6569 20 12V7C20 8.65685 16.4183 10 12 10C7.58172 10 4 8.65685 4 7V12Z"
-        fill="#3771A1" />
-    <path
-        d="M4 17C4 18.6569 7.58172 20 12 20C16.4183 20 20 18.6569 20 17V12C20 13.6569 16.4183 15 12 15C7.58172 15 4 13.6569 4 12V17Z"
-        fill="#4A86C5" />
+        d="M4 17C4 18.6569 7.58172 20 12 20C16.4183 20 20 18.6569 20 17V7C20 8.65685 16.4183 10 12 10C7.58172 10 4 8.65685 4 7V17Z"
+        fill="none" stroke="#FFFFFF" stroke-width="0.7" />
 
     <!-- データベースの輪郭線 -->
     <ellipse cx="12" cy="7" rx="8" ry="3" stroke="#FFFFFF" stroke-width="0.7" fill="none" />
-    <ellipse cx="12" cy="12" rx="8" ry="3" stroke="#FFFFFF" stroke-width="0.7" fill="none" />
     <ellipse cx="12" cy="17" rx="8" ry="3" stroke="#FFFFFF" stroke-width="0.7" fill="none" />
 
     <!-- AIテキスト -->
-    <text x="12" y="13.5" font-family="Arial" font-size="5" font-weight="bold" text-anchor="middle"
+    <text x="12" y="15" font-family="Arial" font-size="5" font-weight="bold" text-anchor="middle"
         fill="#FFFFFF">AI</text>
 
-    <!-- 左上の光線 - 少し大きく -->
+    <!-- 左上の光線 -->
     <path d="M6.5 6.5L4 4" stroke="#FFDD00" stroke-width="1.2" stroke-linecap="round" />
     <path d="M6.5 4L4 6.5" stroke="#FFDD00" stroke-width="1.2" stroke-linecap="round" />
 
-    <!-- 右下の光線 - 少し大きく -->
+    <!-- 右下の光線 -->
     <path d="M17.5 17.5L20 20" stroke="#FFDD00" stroke-width="1.2" stroke-linecap="round" />
     <path d="M17.5 20L20 17.5" stroke="#FFDD00" stroke-width="1.2" stroke-linecap="round" />
 </svg>

@@ -1,67 +1,53 @@
 # SQL Wizard for VSCode
 
-SQL Wizardは、AIを活用してSQLクエリを生成するVSCode拡張機能です。データベース設定の管理、多言語対応、高度なSQLクエリ生成をサポートします。
+![SQL Wizard](media/database.png)
+
+SQL Wizard is a VSCode extension that retrieves tables, columns, indexes, and foreign keys from MySQL databases, accesses AI with prompts, and generates SQL. It can create JOIN queries across multiple tables with correct column names and efficient index usage.
+
+## Features
+
+- **Database Schema Analysis**: Automatically extracts tables, columns, indexes, and foreign keys from MySQL databases
+- **AI-Powered Query Generation**: Generates SQL from natural language prompts
+- **Optimized Queries**: Creates JOIN queries across multiple tables with correct column names and efficient index usage
+- **Multilingual**: Supports both English and Japanese interfaces
+
+## How It Works
+
+![SQL Wizard Overview](media/overview-en.png)
+
+SQL Wizard fetches tables, columns, indexes, and foreign keys from MySQL, accesses AI with the prompt, and generates optimized SQL queries.
+
+## Quick Start
+
+1. Install from VSCode Marketplace
+2. Connect to your MySQL database
+3. Enter your query in natural language
+4. Get optimized SQL instantly
+
+---
+
+# SQL Wizard for VSCode
+
+![SQL Wizard](media/database.png)
+
+SQL Wizardは、MySQLからテーブル・カラム・インデックス・外部キーを取得して、プロンプトとともにAIにアクセスし、SQLを生成するVSCode拡張機能です。複数のテーブルをJOINしてカラム名などに誤りがなく、インデックスが効いたSQLを生成することができます。
 
 ## 機能
 
-### データベース管理
+- **データベーススキーマ分析**: MySQLからテーブル・カラム・インデックス・外部キーを自動的に取得
+- **AIによるクエリ生成**: 自然言語のプロンプトからSQLを生成
+- **最適化されたクエリ**: 複数のテーブルをJOINし、カラム名に誤りがなく、インデックスが効いたSQLを生成
+- **多言語対応**: 日本語と英語のインターフェースをサポート
 
-- 複数のMySQLデータベースの登録と管理
-- データベース接続情報の保存
-- SSHポートフォワーディングのサポート
+## 仕組み
 
-### AIによるSQLクエリ生成
+![SQL Wizard概要](media/overview-ja.png)
 
-- 自然言語からSQLクエリを生成
-- データベーススキーマを考慮した最適なクエリ生成
-- インデックスと関係性を考慮したパフォーマンス最適化
-- クエリの説明付き
+SQL Wizardは、MySQLからテーブル、カラム、インデックス、外部キーを取得し、プロンプトでAIにアクセスして、最適化されたSQLクエリを生成します。
 
-### 多言語対応
+## クイックスタート
 
-- 日本語と英語のインターフェース
-- 言語切り替えによるシームレスな操作
-
-## セットアップ
-
-1. VSCodeの拡張機能マーケットプレイスからSQL Wizardをインストール
-2. アクティビティバーのSQL Wizardアイコンをクリック
-3. 設定タブで以下を設定:
-   - 使用言語（日本語/英語）
-   - データベース接続情報
-   - AIモデルの選択とAPIキーの設定
-
-## データベースの追加
-
-1. 設定タブを開く
-2. 「データベースを追加」ボタンをクリック
-3. 以下の情報を入力:
-   - データベース名
-   - ホスト
-   - ポート
-   - ユーザー名
-   - パスワード
-   - データベース名
-   - （オプション）SSHポートフォワード設定
-
-## SQLクエリの生成
-
-1. クエリ生成タブを開く
-2. 使用するデータベースを選択
-3. 自然言語でクエリの要件を入力
-4. 「SQL生成」ボタンをクリック
-5. 生成されたSQLを確認、コピー、または実行
-
-## 注意事項
-
-- データベース接続情報は暗号化されて保存されます
-- APIキーは安全に管理してください
-- 生成されたSQLは実行前に必ず確認してください
-
-## サポート
-
-問題や提案がありましたら、GitHubのIssueトラッカーに報告してください。
-
-## ライセンス
-
-MIT License
+1. VSCodeマーケットプレイスからインストール
+2. MySQLデータベースに接続
+3. 自然言語でクエリを入力
+4. 最適化されたSQLをすぐに取得
