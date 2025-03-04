@@ -17,12 +17,21 @@ SQL Wizard is a VSCode extension that retrieves tables, columns, indexes, and fo
 
 SQL Wizard fetches tables, columns, indexes, and foreign keys from MySQL, accesses AI with the prompt, and generates optimized SQL queries.
 
+## Installation
+
+You can download and install this extension from the VSCode Marketplace:
+[SQL Wizard for VSCode](https://marketplace.visualstudio.com/items?itemName=n01boy.sqlwizard-vscode)
+
 ## Quick Start
 
 1. Install from VSCode Marketplace
 2. Connect to your MySQL database
 3. Enter your query in natural language
 4. Get optimized SQL instantly
+
+## Repository
+
+GitHub: [https://github.com/n01boy/sqlwizard-vscode](https://github.com/n01boy/sqlwizard-vscode)
 
 ---
 
@@ -45,9 +54,18 @@ SQL Wizardは、MySQLからテーブル・カラム・インデックス・外�
 
 SQL Wizardは、MySQLからテーブル、カラム、インデックス、外部キーを取得し、プロンプトでAIにアクセスして、最適化されたSQLクエリを生成します。
 
+## インストール
+
+このVSCode拡張機能は、VSCode Marketplaceからダウンロードしてインストールできます：
+[SQL Wizard for VSCode](https://marketplace.visualstudio.com/items?itemName=n01boy.sqlwizard-vscode)
+
 ## クイックスタート
 
 1. VSCodeマーケットプレイスからインストール
 2. MySQLデータベースに接続
 3. 自然言語でクエリを入力
 4. 最適化されたSQLをすぐに取得
+
+## リポジトリ
+
+GitHub: [https://github.com/n01boy/sqlwizard-vscode](https://github.com/n01boy/sqlwizard-vscode)

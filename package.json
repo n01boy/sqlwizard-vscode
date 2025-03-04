@@ -2,7 +2,7 @@
   "name": "sqlwizard-vscode",
   "displayName": "SQL Wizard",
   "description": "AI-powered SQL generator with database management",
-  "version": "1.0.0",
+  "version": "0.1.2",
   "publisher": "n01boy",
   "repository": {
     "type": "git",
