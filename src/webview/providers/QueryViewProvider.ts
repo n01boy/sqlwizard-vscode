@@ -78,6 +78,22 @@ export class QueryViewProvider implements vscode.WebviewViewProvider {
                             <!-- 履歴はJavaScriptで動的に追加 -->
                         </ul>
                     </div>
+
+                    <!-- テーブル一覧セクション -->
+                    <div class="section table-list-section" id="table-list-section" style="display: none;">
+                        <h3>テーブル一覧</h3>
+                        <div class="table-search-container">
+                            <input type="text" id="table-search" placeholder="テーブル名・カラム名で検索" class="table-search-input">
+                        </div>
+                        <!-- テーブル一覧用ローディングコンポーネント -->
+                        <div class="table-loading-container" id="table-loading-container" style="display: none;">
+                            <div class="table-loading-spinner"></div>
+                            <div class="table-loading-text">テーブル情報を取得中...</div>
+                        </div>
+                        <div id="table-list" class="table-list">
+                            <!-- テーブル一覧はJavaScriptで動的に追加 -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 外部JavaScriptファイルを読み込む -->
@@ -149,6 +165,21 @@ export class QueryViewProvider implements vscode.WebviewViewProvider {
                             vscode.window.showErrorMessage(i18n.t('messages.error.validation'));
                         }
                         break;
+                        
+                    case 'fetchDatabaseSchema':
+                        try {
+                            const schema = await vscode.commands.executeCommand('sqlwizard.fetchDatabaseSchema', message.databaseId);
+                            webview.postMessage({
+                                command: 'updateTableList',
+                                schema
+                            });
+                        } catch (error) {
+                            vscode.window.showErrorMessage(i18n.t('messages.error.schema'));
+                            webview.postMessage({
+                                command: 'databaseSchemaFetched'
+                            });
+                        }
+                        break;
                 }
             }
         );
@@ -177,6 +208,16 @@ export class QueryViewProvider implements vscode.WebviewViewProvider {
             this.view.webview.postMessage({
                 command: 'updatePromptHistory',
                 history: StorageService.getInstance().getPromptHistory()
+            });
+        }
+    }
+
+    // テーブル一覧を更新
+    updateTableList(schema: any) {
+        if (this.view) {
+            this.view.webview.postMessage({
+                command: 'updateTableList',
+                schema: schema
             });
         }
     }

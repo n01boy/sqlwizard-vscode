@@ -8,6 +8,10 @@ let promptTextarea;
 let generateButton;
 let loadingContainer;
 let promptHistoryList;
+let tableListSection;
+let tableList;
+let tableSearchInput;
+let tableLoadingContainer;
 
 // DOMが読み込まれたら実行
 document.addEventListener('DOMContentLoaded', () => {
@@ -17,6 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
     generateButton = document.getElementById('generate');
     loadingContainer = document.getElementById('loading-container');
     promptHistoryList = document.getElementById('prompt-history');
+    tableListSection = document.getElementById('table-list-section');
+    tableList = document.getElementById('table-list');
+    tableSearchInput = document.getElementById('table-search');
+    tableLoadingContainer = document.getElementById('table-loading-container');
 
     // イベントリスナーの設定
     setupEventListeners();
@@ -24,6 +32,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // イベントリスナーの設定
 function setupEventListeners() {
+    // データベース選択時のイベント
+    databaseDropdown.addEventListener('change', () => {
+        if (databaseDropdown.value) {
+            // データベースが選択されたらスキーマ情報を取得
+            tableListSection.style.display = 'block';
+            showTableLoading();
+            vscode.postMessage({
+                command: 'fetchDatabaseSchema',
+                databaseId: databaseDropdown.value
+            });
+        } else {
+            // 選択が解除されたらテーブル一覧を非表示
+            tableListSection.style.display = 'none';
+        }
+    });
+    
+    // テーブル検索のイベント
+    tableSearchInput.addEventListener('input', () => {
+        filterTableList();
+    });
+
     // 生成ボタンのクリックイベント
     generateButton.addEventListener('click', () => {
         // データベースが選択されていない場合はエラー
@@ -79,6 +108,17 @@ function setupEventListeners() {
                 // プロンプト履歴の更新
                 updatePromptHistory(message.history);
                 break;
+                
+            case 'updateTableList':
+                // テーブル一覧の更新
+                updateTableList(message.schema);
+                hideTableLoading();
+                break;
+                
+            case 'databaseSchemaFetched':
+                // スキーマ取得完了
+                hideTableLoading();
+                break;
         }
     });
 }
@@ -92,6 +132,17 @@ function showLoading() {
 function hideLoading() {
     loadingContainer.style.display = 'none';
     generateButton.disabled = false;
+}
+
+// テーブル一覧用ローディング表示の切り替え
+function showTableLoading() {
+    tableLoadingContainer.style.display = 'block';
+    tableList.style.display = 'none';
+}
+
+function hideTableLoading() {
+    tableLoadingContainer.style.display = 'none';
+    tableList.style.display = 'block';
 }
 
 // データベース一覧を更新
@@ -155,8 +206,138 @@ function updatePromptHistory(historyItems) {
             
             // プロンプトの設定
             promptTextarea.value = item.prompt;
+            
+            // データベースが選択されたらスキーマ情報を取得
+            if (databaseDropdown.value) {
+                tableListSection.style.display = 'block';
+                showTableLoading();
+                vscode.postMessage({
+                    command: 'fetchDatabaseSchema',
+                    databaseId: databaseDropdown.value
+                });
+            }
         });
         
         promptHistoryList.appendChild(historyItem);
     });
+}
+
+// 現在のスキーマ情報を保持する変数
+let currentSchema = null;
+
+// テーブル一覧を表示する関数
+function updateTableList(schema) {
+    if (!schema || !schema.tables || schema.tables.length === 0) {
+        tableListSection.style.display = 'none';
+        return;
+    }
+    
+    // スキーマ情報を保存
+    currentSchema = schema;
+    
+    // 検索欄をクリア
+    tableSearchInput.value = '';
+    
+    // テーブル一覧を表示
+    renderTableList(schema.tables);
+    
+    // テーブル一覧を表示
+    tableListSection.style.display = 'block';
+}
+
+// テーブル一覧をレンダリングする関数
+function renderTableList(tables) {
+    tableList.innerHTML = '';
+    
+    if (tables.length === 0) {
+        const emptyMessage = document.createElement('div');
+        emptyMessage.className = 'table-empty-message';
+        emptyMessage.textContent = '該当するテーブルがありません';
+        tableList.appendChild(emptyMessage);
+        return;
+    }
+    
+    // テーブル一覧を表示
+    tables.forEach(table => {
+        const tableItem = document.createElement('div');
+        tableItem.className = 'table-item';
+        tableItem.dataset.tableName = table.tableName.toLowerCase();
+        
+        // テーブル名
+        const tableName = document.createElement('div');
+        tableName.className = 'table-name';
+        tableName.textContent = table.tableName;
+        tableItem.appendChild(tableName);
+        
+        // カラム一覧（折りたたみ可能）
+        const columnsContainer = document.createElement('div');
+        columnsContainer.className = 'columns-container';
+        
+        // カラム一覧のヘッダー
+        const columnsHeader = document.createElement('div');
+        columnsHeader.className = 'columns-header';
+        columnsHeader.textContent = 'カラム';
+        columnsHeader.addEventListener('click', () => {
+            columnsContainer.classList.toggle('expanded');
+        });
+        columnsContainer.appendChild(columnsHeader);
+        
+        // カラム一覧
+        const columnsList = document.createElement('ul');
+        columnsList.className = 'columns-list';
+        
+        // カラム名を保存（検索用）
+        const columnNames = [];
+        
+        table.columns.forEach(column => {
+            const columnItem = document.createElement('li');
+            columnItem.className = 'column-item';
+            columnItem.textContent = `${column.name} (${column.type})${column.key ? ' [' + column.key + ']' : ''}`;
+            columnsList.appendChild(columnItem);
+            
+            // 検索用にカラム名を保存
+            columnNames.push(column.name.toLowerCase());
+        });
+        
+        // データ属性にカラム名を保存（検索用）
+        tableItem.dataset.columnNames = columnNames.join(',');
+        
+        columnsContainer.appendChild(columnsList);
+        tableItem.appendChild(columnsContainer);
+        
+        tableList.appendChild(tableItem);
+    });
+}
+
+// テーブル一覧をフィルターする関数
+function filterTableList() {
+    if (!currentSchema) return;
+    
+    const searchText = tableSearchInput.value.trim().toLowerCase();
+    
+    if (!searchText) {
+        // 検索テキストが空の場合は全て表示
+        renderTableList(currentSchema.tables);
+        return;
+    }
+    
+    // 検索テキストに一致するテーブルをフィルタリング
+    const filteredTables = currentSchema.tables.filter(table => {
+        // テーブル名で検索
+        if (table.tableName.toLowerCase().includes(searchText)) {
+            return true;
+        }
+        
+        // カラム名で検索
+        for (const column of table.columns) {
+            if (column.name.toLowerCase().includes(searchText)) {
+                return true;
+            }
+        }
+        
+        return false;
+    });
+    
+    // フィルタリングされたテーブル一覧を表示
+    renderTableList(filteredTables);
 }

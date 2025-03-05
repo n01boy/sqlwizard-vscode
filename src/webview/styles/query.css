@@ -111,3 +111,136 @@
     padding: 10px;
     text-align: center;
 }
+
+/* テーブル一覧 */
+.table-list-section h3 {
+    color: var(--vscode-foreground);
+    font-size: 1.1em;
+    margin: 1em 0 0.5em 0;
+}
+
+/* テーブル検索 */
+.table-search-container {
+    margin-bottom: 10px;
+}
+
+.table-search-input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--vscode-input-border);
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.table-search-input:focus {
+    outline: 1px solid var(--vscode-focusBorder);
+    border-color: var(--vscode-focusBorder);
+}
+
+.table-list {
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--vscode-editor-background);
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.table-empty-message {
+    color: var(--vscode-descriptionForeground);
+    font-style: italic;
+    padding: 10px;
+    text-align: center;
+}
+
+/* テーブル一覧用ローディングインジケーター */
+.table-loading-container {
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background: var(--vscode-editor-background);
+    border-radius: 4px;
+}
+
+.table-loading-spinner {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(128, 128, 128, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--vscode-button-background);
+    animation: spin 1s ease-in-out infinite;
+}
+
+.table-loading-text {
+    margin-top: 8px;
+    color: var(--vscode-foreground);
+    font-size: 0.9em;
+}
+
+.table-item {
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--vscode-panel-border);
+    padding-bottom: 10px;
+}
+
+.table-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.table-name {
+    font-weight: bold;
+    color: var(--vscode-editor-foreground);
+    padding: 5px;
+    background: var(--vscode-list-hoverBackground);
+    border-radius: 3px;
+    margin-bottom: 5px;
+}
+
+.columns-container {
+    margin-left: 10px;
+}
+
+.columns-header {
+    cursor: pointer;
+    color: var(--vscode-descriptionForeground);
+    font-size: 0.9em;
+    padding: 3px 5px;
+    user-select: none;
+}
+
+.columns-header:hover {
+    background: var(--vscode-list-hoverBackground);
+    border-radius: 3px;
+}
+
+.columns-header::before {
+    content: '▶';
+    display: inline-block;
+    margin-right: 5px;
+    font-size: 0.8em;
+    transition: transform 0.2s;
+}
+
+.columns-container.expanded .columns-header::before {
+    transform: rotate(90deg);
+}
+
+.columns-list {
+    display: none;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0 15px;
+}
+
+.columns-container.expanded .columns-list {
+    display: block;
+}
+
+.column-item {
+    font-size: 0.85em;
+    color: var(--vscode-editor-foreground);
+    padding: 2px 0;
+}

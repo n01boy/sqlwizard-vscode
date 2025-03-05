@@ -311,6 +311,29 @@ export function registerCommands(
                     };
                 }
             }
+        }),
+
+        // データベーススキーマを取得するコマンド
+        vscode.commands.registerCommand('sqlwizard.fetchDatabaseSchema', async (databaseId: string) => {
+            const dbService = DatabaseService.getInstance();
+
+            try {
+                const dbConfig = storageService.getDatabases().find(db => db.id === databaseId);
+                if (!dbConfig) {
+                    throw new Error(i18nService.t('messages.error.validation'));
+                }
+
+                await dbService.connect(dbConfig);
+                const schema = await dbService.fetchSchema(databaseId);
+                
+                // スキーマ情報を返す
+                return schema;
+            } catch (error) {
+                if (error instanceof Error) {
+                    vscode.window.showErrorMessage(error.message);
+                }
+                throw error;
+            }
         })
     ];
 
