@@ -70,6 +70,28 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
                     case 'deleteDatabase':
                         await vscode.commands.executeCommand('sqlwizard.deleteDatabase', message.databaseId);
                         break;
+                        
+                    case 'testDatabaseConnection':
+                        try {
+                            const result = await vscode.commands.executeCommand('sqlwizard.testDatabaseConnection', message.database) as { success: boolean; error?: string };
+                            webview.postMessage({
+                                command: 'testConnectionResult',
+                                success: result.success,
+                                error: result.error
+                            });
+                        } catch (error) {
+                            let errorMessage = i18n.t('messages.error.connection');
+                            if (error instanceof Error) {
+                                errorMessage = error.message;
+                            }
+                            
+                            webview.postMessage({
+                                command: 'testConnectionResult',
+                                success: false,
+                                error: errorMessage
+                            });
+                        }
+                        break;
 
                     case 'updateAIConfig':
                         try {

@@ -2,7 +2,7 @@
   "name": "sqlwizard-vscode",
   "displayName": "SQL Wizard",
   "description": "AI-powered SQL generator with database management",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "publisher": "n01boy",
   "repository": {
     "type": "git",
@@ -10,7 +10,7 @@
   },
   "icon": "media/database-icon.png",
   "engines": {
-    "vscode": "^1.97.0"
+    "vscode": "^1.70.0"
   },
   "categories": [
     "AI",
@@ -132,7 +132,7 @@
     "@types/i18next": "^13.0.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
-    "@types/vscode": "^1.97.0",
+    "@types/vscode": "^1.70.0",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.25.0",
     "@vscode/test-cli": "^0.0.10",

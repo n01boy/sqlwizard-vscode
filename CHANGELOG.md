@@ -4,6 +4,30 @@ All notable changes to the "sqlwizard-vscode" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.1.4] - 2025-03-05
+
+### Changed
+
+- Further improved VSCode engine compatibility to support VSCode 1.70.0 and above
+- Enhanced compatibility with older VSCode-based editors
+
+### 変更
+
+- VSCodeエンジンの互換性をさらに改善し、VSCode 1.70.0以上をサポート
+- 古いVSCodeベースのエディタとの互換性を強化
+
+## [0.1.3] - 2025-03-05
+
+### Changed
+
+- Updated VSCode engine compatibility to support VSCode 1.96.2 and above
+- Fixed compatibility issues with Cursor editor
+
+### 変更
+
+- VSCodeエンジンの互換性をVSCode 1.96.2以上に更新
+- Cursorエディタとの互換性の問題を修正
+
 ## [0.1.2] - 2025-03-05
 
 ### Added

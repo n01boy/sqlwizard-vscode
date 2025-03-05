@@ -23,6 +23,7 @@
             "save": "保存",
             "cancel": "キャンセル",
             "back": "戻る",
+            "testConnection": "接続テスト",
             "searchPlaceholder": "名前またはホストで検索...",
             "nameRequired": "名前を入力してください",
             "hostRequired": "ホストを入力してください",

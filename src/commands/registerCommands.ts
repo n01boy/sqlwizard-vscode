@@ -238,6 +238,79 @@ export function registerCommands(
                 }
                 throw error;
             }
+        }),
+
+        vscode.commands.registerCommand('sqlwizard.testDatabaseConnection', async (database: Partial<DatabaseConfig>) => {
+            try {
+                // バリデーション
+                const fieldErrors: Record<string, string> = {};
+                let hasError = false;
+                
+                if (!database.host) {
+                    fieldErrors.host = i18nService.t('settings.database.hostRequired');
+                    hasError = true;
+                }
+                
+                if (!database.port) {
+                    fieldErrors.port = i18nService.t('settings.database.portRequired');
+                    hasError = true;
+                } else if (isNaN(database.port)) {
+                    fieldErrors.port = i18nService.t('settings.database.portInvalid');
+                    hasError = true;
+                }
+                
+                if (!database.user) {
+                    fieldErrors.user = i18nService.t('settings.database.userRequired');
+                    hasError = true;
+                }
+                
+                if (!database.database) {
+                    fieldErrors.database = i18nService.t('settings.database.databaseRequired');
+                    hasError = true;
+                }
+                
+                if (hasError) {
+                    throw new ValidationError(i18nService.t('messages.error.validation'), fieldErrors);
+                }
+                
+                // 一時的なデータベース設定を作成
+                const tempDbConfig: DatabaseConfig = {
+                    id: 'temp-' + Date.now().toString(),
+                    name: 'Temporary Connection',
+                    provider: 'mysql',
+                    host: database.host!,
+                    port: database.port!,
+                    user: database.user!,
+                    password: database.password || '',
+                    database: database.database!
+                };
+                
+                // データベースサービスを取得
+                const dbService = DatabaseService.getInstance();
+                
+                // 接続テスト
+                await dbService.connect(tempDbConfig);
+                
+                // 接続が成功したら切断
+                await dbService.disconnect(tempDbConfig.id);
+                
+                // 成功メッセージを返す
+                return { success: true };
+            } catch (error) {
+                if (error instanceof ValidationError) {
+                    throw error;
+                } else if (error instanceof Error) {
+                    return {
+                        success: false,
+                        error: error.message
+                    };
+                } else {
+                    return {
+                        success: false,
+                        error: i18nService.t('messages.error.connection')
+                    };
+                }
+            }
         })
     ];
 

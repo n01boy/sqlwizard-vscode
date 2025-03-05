@@ -23,6 +23,7 @@
             "save": "Save",
             "cancel": "Cancel",
             "back": "Back",
+            "testConnection": "Test Connection",
             "searchPlaceholder": "Search by name or host...",
             "nameRequired": "Name is required",
             "hostRequired": "Host is required",

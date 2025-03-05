@@ -76,53 +76,36 @@ function showError(message, fieldErrors = {}) {
     }
 }
 
-// タブ切り替え
-tabButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const tabId = button.dataset.tab;
-        
-        // アクティブなタブボタンを更新
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        
-        // アクティブなタブコンテンツを更新
-        tabContents.forEach(content => content.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-    });
-});
-
-// データベース検索
-dbSearchInput.addEventListener('input', () => {
-    const searchTerm = dbSearchInput.value.toLowerCase();
-    const filteredDbs = databases.filter(db => 
-        db.name.toLowerCase().includes(searchTerm) || 
-        db.host.toLowerCase().includes(searchTerm)
-    );
-    
-    renderSearchResults(filteredDbs);
-});
-
-function renderSearchResults(results) {
-    searchResults.innerHTML = '';
-    
-    if (results.length === 0) {
-        searchResults.innerHTML = '<div class="search-result-item">No results found</div>';
+// テスト接続ボタンのイベントリスナー
+const testConnectionButton = document.getElementById('test-connection');
+testConnectionButton.addEventListener('click', () => {
+    // フォームのバリデーション
+    if (!validateForm()) {
         return;
     }
     
-    results.forEach(db => {
-        const item = document.createElement('div');
-        item.className = 'search-result-item';
-        item.textContent = `${db.name} (${db.host})`;
-        item.dataset.id = db.id;
-        
-        item.addEventListener('click', () => {
-            selectDatabase(db);
-        });
-        
-        searchResults.appendChild(item);
+    const host = hostInput.value;
+    const port = portInput.value;
+    const user = userInput.value;
+    const password = passwordInput.value;
+    const database = databaseInput.value;
+    
+    // テスト接続リクエスト
+    vscode.postMessage({
+        command: 'testDatabaseConnection',
+        database: {
+            host,
+            port: parseInt(port),
+            user,
+            password,
+            database
+        }
     });
-}
+    
+    // ボタンを無効化して「テスト中...」に変更
+    testConnectionButton.disabled = true;
+    testConnectionButton.textContent = document.documentElement.lang === 'ja' ? 'テスト中...' : 'Testing...';
+});
 
 function selectDatabase(db) {
     currentDbId = db.id;
@@ -133,13 +116,6 @@ function selectDatabase(db) {
     document.getElementById('db-user').value = db.user;
     document.getElementById('db-password').value = db.password;
     document.getElementById('db-database').value = db.database;
-    
-    // 新規作成タブに切り替え
-    tabButtons.forEach(btn => btn.classList.remove('active'));
-    tabButtons[1].classList.add('active');
-    
-    tabContents.forEach(content => content.classList.remove('active'));
-    document.getElementById('create-tab').classList.add('active');
 }
 
 function createDatabaseElement(database) {
@@ -174,16 +150,6 @@ addDatabaseButton.addEventListener('click', () => {
     
     // エラーをクリア
     clearErrors();
-    
-    // 検索結果を更新
-    renderSearchResults(databases);
-    
-    // 検索タブをアクティブに
-    tabButtons.forEach(btn => btn.classList.remove('active'));
-    tabButtons[0].classList.add('active');
-    
-    tabContents.forEach(content => content.classList.remove('active'));
-    document.getElementById('search-tab').classList.add('active');
     
     // 画面切り替え
     settingsPage.style.display = 'none';
@@ -332,6 +298,24 @@ window.addEventListener('message', (event) => {
         case 'databaseSaved':
             settingsPage.style.display = 'block';
             databaseForm.style.display = 'none';
+            break;
+        case 'testConnectionResult':
+            // テスト接続ボタンを元に戻す
+            testConnectionButton.disabled = false;
+            testConnectionButton.textContent = document.documentElement.lang === 'ja' ?
+                '接続テスト' : 'Test Connection';
+            
+            // 結果に応じてメッセージを表示
+            if (message.success) {
+                vscode.postMessage({
+                    command: 'showError',
+                    message: document.documentElement.lang === 'ja' ?
+                        'データベースに接続しました' : 'Connected to database successfully'
+                });
+            } else {
+                showError(message.error || (document.documentElement.lang === 'ja' ?
+                    'データベースへの接続に失敗しました' : 'Failed to connect to database'));
+            }
             break;
     }
 });

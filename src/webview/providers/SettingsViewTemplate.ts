@@ -68,24 +68,7 @@ export function getSettingsViewHtml(webview: vscode.Webview, extensionUri: vscod
 
                     <div class="error-message" id="error-message" style="display: none;"></div>
 
-                    <div class="tab-container">
-                        <div class="tab-buttons">
-                            <button class="tab-button active" data-tab="search-tab">${i18n.t('settings.database.search')}</button>
-                            <button class="tab-button" data-tab="create-tab">${i18n.t('settings.database.create')}</button>
-                        </div>
-                        
-                        <!-- 検索タブ -->
-                        <div id="search-tab" class="tab-content active">
-                            <div class="search-container">
-                                <input type="text" id="db-search" placeholder="${i18n.t('settings.database.searchPlaceholder')}">
-                                <div class="search-results" id="search-results">
-                                    <!-- 検索結果がここに表示されます -->
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 新規作成タブ -->
-                        <div id="create-tab" class="tab-content">
+                    <div class="form-container">
                             <div class="form-row">
                                 <label for="db-name">${i18n.t('settings.database.name')}</label>
                                 <input type="text" id="db-name" required>
@@ -122,13 +105,15 @@ export function getSettingsViewHtml(webview: vscode.Webview, extensionUri: vscod
                                 <div class="field-error" id="database-error"></div>
                             </div>
                         </div>
+                        
+                        <div class="form-actions">
+                            <button id="test-connection" class="vscode-button">${i18n.t('settings.database.testConnection')}</button>
+                            <div class="right-buttons">
+                                <button id="cancel-db" class="vscode-button">${i18n.t('settings.database.cancel')}</button>
+                                <button id="save-db" class="vscode-button">${i18n.t('settings.database.save')}</button>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="form-actions">
-                        <button id="cancel-db" class="vscode-button">${i18n.t('settings.database.cancel')}</button>
-                        <button id="save-db" class="vscode-button">${i18n.t('settings.database.save')}</button>
-                    </div>
-                </div>
             </div>
 
             <script src="${getUri(webview, extensionUri, ['src', 'webview', 'settings', 'settingsScript.js'])}"></script>
