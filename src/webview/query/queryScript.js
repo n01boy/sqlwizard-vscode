@@ -305,6 +305,64 @@ function renderTableList(tables) {
         columnsContainer.appendChild(columnsList);
         tableItem.appendChild(columnsContainer);
         
+        // インデックス一覧（折りたたみ可能）
+        if (table.indexes && table.indexes.length > 0) {
+            const indexesContainer = document.createElement('div');
+            indexesContainer.className = 'indexes-container';
+            
+            // インデックス一覧のヘッダー
+            const indexesHeader = document.createElement('div');
+            indexesHeader.className = 'indexes-header';
+            indexesHeader.textContent = 'インデックス';
+            indexesHeader.addEventListener('click', () => {
+                indexesContainer.classList.toggle('expanded');
+            });
+            indexesContainer.appendChild(indexesHeader);
+            
+            // インデックス一覧
+            const indexesList = document.createElement('ul');
+            indexesList.className = 'indexes-list';
+            
+            table.indexes.forEach(index => {
+                const indexItem = document.createElement('li');
+                indexItem.className = 'index-item';
+                indexItem.textContent = `${index.name} (${index.type}) - カラム: ${index.columns.join(', ')}${index.method ? ' - 方式: ' + index.method : ''}`;
+                indexesList.appendChild(indexItem);
+            });
+            
+            indexesContainer.appendChild(indexesList);
+            tableItem.appendChild(indexesContainer);
+        }
+        
+        // 外部キー一覧（折りたたみ可能）
+        if (table.foreignKeys && table.foreignKeys.length > 0) {
+            const foreignKeysContainer = document.createElement('div');
+            foreignKeysContainer.className = 'foreign-keys-container';
+            
+            // 外部キー一覧のヘッダー
+            const foreignKeysHeader = document.createElement('div');
+            foreignKeysHeader.className = 'foreign-keys-header';
+            foreignKeysHeader.textContent = '外部キー';
+            foreignKeysHeader.addEventListener('click', () => {
+                foreignKeysContainer.classList.toggle('expanded');
+            });
+            foreignKeysContainer.appendChild(foreignKeysHeader);
+            
+            // 外部キー一覧
+            const foreignKeysList = document.createElement('ul');
+            foreignKeysList.className = 'foreign-keys-list';
+            
+            table.foreignKeys.forEach(fk => {
+                const fkItem = document.createElement('li');
+                fkItem.className = 'foreign-key-item';
+                fkItem.textContent = `${fk.columnName} → ${fk.referencedTable}.${fk.referencedColumn}`;
+                foreignKeysList.appendChild(fkItem);
+            });
+            
+            foreignKeysContainer.appendChild(foreignKeysList);
+            tableItem.appendChild(foreignKeysContainer);
+        }
+        
         tableList.appendChild(tableItem);
     });
 }

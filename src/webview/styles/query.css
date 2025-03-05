@@ -119,6 +119,62 @@
     margin: 1em 0 0.5em 0;
 }
 
+/* インデックスと外部キーのスタイル */
+.indexes-container,
+.foreign-keys-container {
+    margin-left: 10px;
+    margin-top: 5px;
+}
+
+.indexes-header,
+.foreign-keys-header {
+    cursor: pointer;
+    color: var(--vscode-descriptionForeground);
+    font-size: 0.9em;
+    padding: 3px 5px;
+    user-select: none;
+}
+
+.indexes-header:hover,
+.foreign-keys-header:hover {
+    background: var(--vscode-list-hoverBackground);
+    border-radius: 3px;
+}
+
+.indexes-header::before,
+.foreign-keys-header::before {
+    content: '▶';
+    display: inline-block;
+    margin-right: 5px;
+    font-size: 0.8em;
+    transition: transform 0.2s;
+}
+
+.indexes-container.expanded .indexes-header::before,
+.foreign-keys-container.expanded .foreign-keys-header::before {
+    transform: rotate(90deg);
+}
+
+.indexes-list,
+.foreign-keys-list {
+    display: none;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0 15px;
+}
+
+.indexes-container.expanded .indexes-list,
+.foreign-keys-container.expanded .foreign-keys-list {
+    display: block;
+}
+
+.index-item,
+.foreign-key-item {
+    font-size: 0.85em;
+    color: var(--vscode-editor-foreground);
+    padding: 2px 0;
+}
+
 /* テーブル検索 */
 .table-search-container {
     margin-bottom: 10px;
