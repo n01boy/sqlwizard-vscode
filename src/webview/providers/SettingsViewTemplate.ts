@@ -1,12 +1,22 @@
 import * as vscode from 'vscode';
 import { I18nService } from '../../services/I18nService';
-
+const isDev = process.env.NODE_ENV === 'local';
 export function getSettingsViewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string {
-    const i18n = I18nService.getInstance();
-    const commonStylesUri = getUri(webview, extensionUri, ['src', 'webview', 'styles', 'common.css']);
-    const settingsStylesUri = getUri(webview, extensionUri, ['src', 'webview', 'styles', 'settings.css']);
+  const i18n = I18nService.getInstance();
+  const commonStylesUri = getUri(webview, extensionUri, [
+    isDev ? 'src' : 'out',
+    'webview',
+    'styles',
+    'common.css',
+  ]);
+  const settingsStylesUri = getUri(webview, extensionUri, [
+    isDev ? 'src' : 'out',
+    'webview',
+    'styles',
+    'settings.css',
+  ]);
 
-    return `
+  return `
         <!DOCTYPE html>
         <html lang="${i18n.getCurrentLanguage()}">
         <head>
@@ -116,12 +126,12 @@ export function getSettingsViewHtml(webview: vscode.Webview, extensionUri: vscod
                     </div>
             </div>
 
-            <script src="${getUri(webview, extensionUri, ['src', 'webview', 'settings', 'settingsScript.js'])}"></script>
+            <script src="${getUri(webview, extensionUri, [isDev ? 'src' : 'out', 'webview', 'settings', 'settingsScript.js'])}"></script>
         </body>
         </html>
     `;
 }
 
 function getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]): vscode.Uri {
-    return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
+  return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
 }

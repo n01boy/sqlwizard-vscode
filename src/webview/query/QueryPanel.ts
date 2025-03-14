@@ -1,42 +1,52 @@
 import * as vscode from 'vscode';
 import { DatabaseConfig, QueryGenerationResponse } from '../../models/interfaces';
 import { I18nService } from '../../services/I18nService';
-
+const isDev = process.env.NODE_ENV === 'local';
 export class QueryPanel {
-    private static currentPanel: QueryPanel | undefined;
-    private readonly panel: vscode.WebviewPanel;
-    private disposables: vscode.Disposable[] = [];
+  private static currentPanel: QueryPanel | undefined;
+  private readonly panel: vscode.WebviewPanel;
+  private disposables: vscode.Disposable[] = [];
 
-    private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
-        this.panel = panel;
-        this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
-        this.panel.webview.html = this.getWebviewContent(extensionUri);
-        this.setWebviewMessageListener(this.panel.webview);
-    }
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+    this.panel = panel;
+    this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
+    this.panel.webview.html = this.getWebviewContent(extensionUri);
+    this.setWebviewMessageListener(this.panel.webview);
+  }
 
-    static render(extensionUri: vscode.Uri) {
-        if (QueryPanel.currentPanel) {
-            QueryPanel.currentPanel.panel.reveal(vscode.ViewColumn.One);
-        } else {
-            const panel = vscode.window.createWebviewPanel(
-                'sqlwizard.query',
-                I18nService.getInstance().t('query.title'),
-                vscode.ViewColumn.One,
-                {
-                    enableScripts: true,
-                    localResourceRoots: [extensionUri]
-                }
-            );
-            QueryPanel.currentPanel = new QueryPanel(panel, extensionUri);
+  static render(extensionUri: vscode.Uri) {
+    if (QueryPanel.currentPanel) {
+      QueryPanel.currentPanel.panel.reveal(vscode.ViewColumn.One);
+    } else {
+      const panel = vscode.window.createWebviewPanel(
+        'sqlwizard.query',
+        I18nService.getInstance().t('query.title'),
+        vscode.ViewColumn.One,
+        {
+          enableScripts: true,
+          localResourceRoots: [extensionUri],
         }
+      );
+      QueryPanel.currentPanel = new QueryPanel(panel, extensionUri);
     }
+  }
 
-    private getWebviewContent(extensionUri: vscode.Uri): string {
-        const i18n = I18nService.getInstance();
-        const commonStylesUri = this.getUri(extensionUri, ['src', 'webview', 'styles', 'common.css']);
-        const queryStylesUri = this.getUri(extensionUri, ['src', 'webview', 'styles', 'query.css']);
+  private getWebviewContent(extensionUri: vscode.Uri): string {
+    const i18n = I18nService.getInstance();
+    const commonStylesUri = this.getUri(extensionUri, [
+      isDev ? 'src' : 'out',
+      'webview',
+      'styles',
+      'common.css',
+    ]);
+    const queryStylesUri = this.getUri(extensionUri, [
+      isDev ? 'src' : 'out',
+      'webview',
+      'styles',
+      'query.css',
+    ]);
 
-        return `
+    return `
             <!DOCTYPE html>
             <html lang="${i18n.getCurrentLanguage()}">
             <head>
@@ -158,67 +168,67 @@ export class QueryPanel {
             </body>
             </html>
         `;
-    }
+  }
 
-    private getUri(extensionUri: vscode.Uri, pathList: string[]) {
-        return this.panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
-    }
+  private getUri(extensionUri: vscode.Uri, pathList: string[]) {
+    return this.panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
+  }
 
-    private setWebviewMessageListener(webview: vscode.Webview) {
-        webview.onDidReceiveMessage(
-            async (message: any) => {
-                const i18n = I18nService.getInstance();
+  private setWebviewMessageListener(webview: vscode.Webview) {
+    webview.onDidReceiveMessage(
+      async (message: any) => {
+        const i18n = I18nService.getInstance();
 
-                switch (message.command) {
-                    case 'generateSQL':
-                        try {
-                            const result = await vscode.commands.executeCommand('sqlwizard.generateSQL', {
-                                databaseId: message.databaseId,
-                                prompt: message.prompt
-                            });
-                            webview.postMessage({
-                                command: 'showResult',
-                                result
-                            });
-                        } catch (error) {
-                            vscode.window.showErrorMessage(i18n.t('messages.error.generation'));
-                        }
-                        break;
-
-                    case 'copySQL':
-                        await vscode.env.clipboard.writeText(message.sql);
-                        vscode.window.showInformationMessage(i18n.t('messages.success.copied'));
-                        break;
-
-                    case 'executeSQL':
-                        try {
-                            await vscode.commands.executeCommand('sqlwizard.executeSQL', {
-                                databaseId: message.databaseId,
-                                sql: message.sql
-                            });
-                        } catch (error) {
-                            vscode.window.showErrorMessage(i18n.t('messages.error.execution'));
-                        }
-                        break;
-
-                    case 'showError':
-                        vscode.window.showErrorMessage(message.message);
-                        break;
-                }
-            },
-            undefined,
-            this.disposables
-        );
-    }
-
-    private dispose() {
-        QueryPanel.currentPanel = undefined;
-        this.panel.dispose();
-        while (this.disposables.length) {
-            const disposable = this.disposables.pop();
-            if (disposable) {
-                disposable.dispose();
+        switch (message.command) {
+          case 'generateSQL':
+            try {
+              const result = await vscode.commands.executeCommand('sqlwizard.generateSQL', {
+                databaseId: message.databaseId,
+                prompt: message.prompt,
+              });
+              webview.postMessage({
+                command: 'showResult',
+                result,
+              });
+            } catch (error) {
+              vscode.window.showErrorMessage(i18n.t('messages.error.generation'));
             }
+            break;
+
+          case 'copySQL':
+            await vscode.env.clipboard.writeText(message.sql);
+            vscode.window.showInformationMessage(i18n.t('messages.success.copied'));
+            break;
+
+          case 'executeSQL':
+            try {
+              await vscode.commands.executeCommand('sqlwizard.executeSQL', {
+                databaseId: message.databaseId,
+                sql: message.sql,
+              });
+            } catch (error) {
+              vscode.window.showErrorMessage(i18n.t('messages.error.execution'));
+            }
+            break;
+
+          case 'showError':
+            vscode.window.showErrorMessage(message.message);
+            break;
         }
+      },
+      undefined,
+      this.disposables
+    );
+  }
+
+  private dispose() {
+    QueryPanel.currentPanel = undefined;
+    this.panel.dispose();
+    while (this.disposables.length) {
+      const disposable = this.disposables.pop();
+      if (disposable) {
+        disposable.dispose();
+      }
     }
+  }
 }

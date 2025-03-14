@@ -2,7 +2,7 @@
   "name": "sqlwizard-vscode",
   "displayName": "SQL Wizard",
   "description": "AI-powered SQL generator with database management",
-  "version": "0.1.4",
+  "version": "0.3.1",
   "publisher": "n01boy",
   "repository": {
     "type": "git",
@@ -116,10 +116,12 @@
     ]
   },
   "scripts": {
-    "compile": "tsc -p ./",
+    "format": "prettier --write \"src/**/*.{ts,js,json,css}\"",
+    "compile": "npm run format && rm -rf out && tsc -p ./ && npm run copy:resource && vsce package",
+    "copy:resource": "mkdir -p out/webview/styles/ out/webview/settings/ out/webview/query/ && cp src/webview/styles/*.css out/webview/styles/ && cp src/webview/settings/settingsScript.js out/webview/settings/ && cp src/webview/query/queryScript.js out/webview/query/",
     "watch": "tsc -watch -p ./",
     "package": "vsce package",
-    "publish": "vsce publish",
+    "publish": "npm run compile && vsce publish",
     "lint": "eslint src",
     "test": "vscode-test"
   },
@@ -138,6 +140,7 @@
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
     "eslint": "^9.21.0",
+    "prettier": "^3.5.3",
     "sharp": "^0.33.5",
     "typescript": "^5.7.3"
   }

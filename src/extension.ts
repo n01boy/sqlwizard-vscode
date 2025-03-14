@@ -6,24 +6,24 @@ import { QueryViewProvider } from './webview/providers/QueryViewProvider';
 import { registerCommands } from './commands/registerCommands';
 
 export async function activate(context: vscode.ExtensionContext) {
-    // Initialize services
-    StorageService.initialize(context);
-    I18nService.getInstance();
-    
-    // Register views
-    const settingsViewProvider = new SettingsViewProvider(context.extensionUri);
-    const queryViewProvider = new QueryViewProvider(context.extensionUri);
-    
-    context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider('sqlwizard.settingsView', settingsViewProvider),
-        vscode.window.registerWebviewViewProvider('sqlwizard.queryView', queryViewProvider)
-    );
-    
-    // Register commands
-    const commands = registerCommands(context, settingsViewProvider, queryViewProvider);
-    context.subscriptions.push(...commands);
+  // Initialize services
+  StorageService.initialize(context);
+  I18nService.getInstance();
+
+  // Register views
+  const settingsViewProvider = new SettingsViewProvider(context.extensionUri);
+  const queryViewProvider = new QueryViewProvider(context.extensionUri);
+
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider('sqlwizard.settingsView', settingsViewProvider),
+    vscode.window.registerWebviewViewProvider('sqlwizard.queryView', queryViewProvider)
+  );
+
+  // Register commands
+  const commands = registerCommands(context, settingsViewProvider, queryViewProvider);
+  context.subscriptions.push(...commands);
 }
 
 export function deactivate() {
-    // Clean up resources
+  // Clean up resources
 }

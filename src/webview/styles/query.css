@@ -1,302 +1,304 @@
 .sql-result {
-    background: var(--vscode-editor-background);
-    color: var(--vscode-editor-foreground);
-    padding: 10px;
-    margin-top: 10px;
-    border-radius: 4px;
-    font-family: var(--vscode-editor-font-family);
-    white-space: pre-wrap;
+  background: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 4px;
+  font-family: var(--vscode-editor-font-family);
+  white-space: pre-wrap;
 }
 
 .explanation {
-    margin-top: 10px;
-    padding: 10px;
-    background: var(--vscode-textBlockQuote-background);
-    border-left: 4px solid var(--vscode-textBlockQuote-border);
-    color: var(--vscode-foreground);
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--vscode-textBlockQuote-background);
+  border-left: 4px solid var(--vscode-textBlockQuote-border);
+  color: var(--vscode-foreground);
 }
 
 #prompt {
-    min-height: 100px;
-    resize: vertical;
+  min-height: 100px;
+  resize: vertical;
 }
 
 .result-section h3 {
-    color: var(--vscode-foreground);
-    font-size: 1.1em;
-    margin: 1em 0;
+  color: var(--vscode-foreground);
+  font-size: 1.1em;
+  margin: 1em 0;
 }
 
 .button-group {
-    justify-content: flex-start;
+  justify-content: flex-start;
 }
 
 .button-group vscode-button {
-    min-width: 100px;
+  min-width: 100px;
 }
 
 /* ローディングインジケーター */
 .loading-container {
-    display: none;
-    text-align: center;
-    margin: 20px 0;
+  display: none;
+  text-align: center;
+  margin: 20px 0;
 }
 
 .loading-spinner {
-    display: inline-block;
-    width: 30px;
-    height: 30px;
-    border: 3px solid rgba(128, 128, 128, 0.3);
-    border-radius: 50%;
-    border-top-color: var(--vscode-button-background);
-    animation: spin 1s ease-in-out infinite;
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(128, 128, 128, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--vscode-button-background);
+  animation: spin 1s ease-in-out infinite;
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
-    margin-top: 10px;
-    color: var(--vscode-foreground);
+  margin-top: 10px;
+  color: var(--vscode-foreground);
 }
 
 /* プロンプト履歴 */
 .prompt-history-section h3 {
-    color: var(--vscode-foreground);
-    font-size: 1.1em;
-    margin: 1em 0 0.5em 0;
+  color: var(--vscode-foreground);
+  font-size: 1.1em;
+  margin: 1em 0 0.5em 0;
 }
 
 .prompt-history-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-height: 300px;
-    overflow-y: auto;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .prompt-history-item {
-    padding: 8px 10px;
-    margin-bottom: 5px;
-    background: var(--vscode-editor-background);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
+  padding: 8px 10px;
+  margin-bottom: 5px;
+  background: var(--vscode-editor-background);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .prompt-history-item:hover {
-    background: var(--vscode-list-hoverBackground);
+  background: var(--vscode-list-hoverBackground);
 }
 
 .prompt-history-content {
-    color: var(--vscode-editor-foreground);
-    font-size: 0.9em;
-    margin-bottom: 5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  color: var(--vscode-editor-foreground);
+  font-size: 0.9em;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .prompt-history-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8em;
-    color: var(--vscode-descriptionForeground);
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8em;
+  color: var(--vscode-descriptionForeground);
 }
 
 .prompt-history-empty {
-    color: var(--vscode-descriptionForeground);
-    font-style: italic;
-    padding: 10px;
-    text-align: center;
+  color: var(--vscode-descriptionForeground);
+  font-style: italic;
+  padding: 10px;
+  text-align: center;
 }
 
 /* テーブル一覧 */
 .table-list-section h3 {
-    color: var(--vscode-foreground);
-    font-size: 1.1em;
-    margin: 1em 0 0.5em 0;
+  color: var(--vscode-foreground);
+  font-size: 1.1em;
+  margin: 1em 0 0.5em 0;
 }
 
 /* インデックスと外部キーのスタイル */
 .indexes-container,
 .foreign-keys-container {
-    margin-left: 10px;
-    margin-top: 5px;
+  margin-left: 10px;
+  margin-top: 5px;
 }
 
 .indexes-header,
 .foreign-keys-header {
-    cursor: pointer;
-    color: var(--vscode-descriptionForeground);
-    font-size: 0.9em;
-    padding: 3px 5px;
-    user-select: none;
+  cursor: pointer;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.9em;
+  padding: 3px 5px;
+  user-select: none;
 }
 
 .indexes-header:hover,
 .foreign-keys-header:hover {
-    background: var(--vscode-list-hoverBackground);
-    border-radius: 3px;
+  background: var(--vscode-list-hoverBackground);
+  border-radius: 3px;
 }
 
 .indexes-header::before,
 .foreign-keys-header::before {
-    content: '▶';
-    display: inline-block;
-    margin-right: 5px;
-    font-size: 0.8em;
-    transition: transform 0.2s;
+  content: '▶';
+  display: inline-block;
+  margin-right: 5px;
+  font-size: 0.8em;
+  transition: transform 0.2s;
 }
 
 .indexes-container.expanded .indexes-header::before,
 .foreign-keys-container.expanded .foreign-keys-header::before {
-    transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 
 .indexes-list,
 .foreign-keys-list {
-    display: none;
-    list-style: none;
-    padding: 0;
-    margin: 0 0 0 15px;
+  display: none;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0 15px;
 }
 
 .indexes-container.expanded .indexes-list,
 .foreign-keys-container.expanded .foreign-keys-list {
-    display: block;
+  display: block;
 }
 
 .index-item,
 .foreign-key-item {
-    font-size: 0.85em;
-    color: var(--vscode-editor-foreground);
-    padding: 2px 0;
+  font-size: 0.85em;
+  color: var(--vscode-editor-foreground);
+  padding: 2px 0;
 }
 
 /* テーブル検索 */
 .table-search-container {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 .table-search-input {
-    width: 100%;
-    padding: 6px 8px;
-    border: 1px solid var(--vscode-input-border);
-    background: var(--vscode-input-background);
-    color: var(--vscode-input-foreground);
-    border-radius: 4px;
-    font-size: 0.9em;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--vscode-input-border);
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border-radius: 4px;
+  font-size: 0.9em;
 }
 
 .table-search-input:focus {
-    outline: 1px solid var(--vscode-focusBorder);
-    border-color: var(--vscode-focusBorder);
+  outline: 1px solid var(--vscode-focusBorder);
+  border-color: var(--vscode-focusBorder);
 }
 
 .table-list {
-    max-height: 400px;
-    overflow-y: auto;
-    background: var(--vscode-editor-background);
-    border-radius: 4px;
-    padding: 5px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: var(--vscode-editor-background);
+  border-radius: 4px;
+  padding: 5px;
 }
 
 .table-empty-message {
-    color: var(--vscode-descriptionForeground);
-    font-style: italic;
-    padding: 10px;
-    text-align: center;
+  color: var(--vscode-descriptionForeground);
+  font-style: italic;
+  padding: 10px;
+  text-align: center;
 }
 
 /* テーブル一覧用ローディングインジケーター */
 .table-loading-container {
-    text-align: center;
-    margin: 20px 0;
-    padding: 15px;
-    background: var(--vscode-editor-background);
-    border-radius: 4px;
+  text-align: center;
+  margin: 20px 0;
+  padding: 15px;
+  background: var(--vscode-editor-background);
+  border-radius: 4px;
 }
 
 .table-loading-spinner {
-    display: inline-block;
-    width: 24px;
-    height: 24px;
-    border: 2px solid rgba(128, 128, 128, 0.3);
-    border-radius: 50%;
-    border-top-color: var(--vscode-button-background);
-    animation: spin 1s ease-in-out infinite;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(128, 128, 128, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--vscode-button-background);
+  animation: spin 1s ease-in-out infinite;
 }
 
 .table-loading-text {
-    margin-top: 8px;
-    color: var(--vscode-foreground);
-    font-size: 0.9em;
+  margin-top: 8px;
+  color: var(--vscode-foreground);
+  font-size: 0.9em;
 }
 
 .table-item {
-    margin-bottom: 10px;
-    border-bottom: 1px solid var(--vscode-panel-border);
-    padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  padding-bottom: 10px;
 }
 
 .table-item:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
+  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .table-name {
-    font-weight: bold;
-    color: var(--vscode-editor-foreground);
-    padding: 5px;
-    background: var(--vscode-list-hoverBackground);
-    border-radius: 3px;
-    margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--vscode-editor-foreground);
+  padding: 5px;
+  background: var(--vscode-list-hoverBackground);
+  border-radius: 3px;
+  margin-bottom: 5px;
 }
 
 .columns-container {
-    margin-left: 10px;
+  margin-left: 10px;
 }
 
 .columns-header {
-    cursor: pointer;
-    color: var(--vscode-descriptionForeground);
-    font-size: 0.9em;
-    padding: 3px 5px;
-    user-select: none;
+  cursor: pointer;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.9em;
+  padding: 3px 5px;
+  user-select: none;
 }
 
 .columns-header:hover {
-    background: var(--vscode-list-hoverBackground);
-    border-radius: 3px;
+  background: var(--vscode-list-hoverBackground);
+  border-radius: 3px;
 }
 
 .columns-header::before {
-    content: '▶';
-    display: inline-block;
-    margin-right: 5px;
-    font-size: 0.8em;
-    transition: transform 0.2s;
+  content: '▶';
+  display: inline-block;
+  margin-right: 5px;
+  font-size: 0.8em;
+  transition: transform 0.2s;
 }
 
 .columns-container.expanded .columns-header::before {
-    transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 
 .columns-list {
-    display: none;
-    list-style: none;
-    padding: 0;
-    margin: 0 0 0 15px;
+  display: none;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0 15px;
 }
 
 .columns-container.expanded .columns-list {
-    display: block;
+  display: block;
 }
 
 .column-item {
-    font-size: 0.85em;
-    color: var(--vscode-editor-foreground);
-    padding: 2px 0;
+  font-size: 0.85em;
+  color: var(--vscode-editor-foreground);
+  padding: 2px 0;
 }

@@ -11,10 +11,10 @@ const errorMessage = document.getElementById('error-message');
 // Language settings
 const languageDropdown = document.getElementById('language');
 languageDropdown.addEventListener('change', (e) => {
-    vscode.postMessage({
-        command: 'changeLanguage',
-        language: e.target.value
-    });
+  vscode.postMessage({
+    command: 'changeLanguage',
+    language: e.target.value,
+  });
 });
 
 // Database settings
@@ -45,83 +45,84 @@ const databaseError = document.getElementById('database-error');
 
 // エラーメッセージをクリア
 function clearErrors() {
-    errorMessage.style.display = 'none';
-    errorMessage.textContent = '';
-    nameError.textContent = '';
-    hostError.textContent = '';
-    portError.textContent = '';
-    userError.textContent = '';
-    databaseError.textContent = '';
+  errorMessage.style.display = 'none';
+  errorMessage.textContent = '';
+  nameError.textContent = '';
+  hostError.textContent = '';
+  portError.textContent = '';
+  userError.textContent = '';
+  databaseError.textContent = '';
 }
 
 // エラーメッセージを表示
 function showError(message, fieldErrors = {}) {
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
-    
-    if (fieldErrors.name) {
-        nameError.textContent = fieldErrors.name;
-    }
-    if (fieldErrors.host) {
-        hostError.textContent = fieldErrors.host;
-    }
-    if (fieldErrors.port) {
-        portError.textContent = fieldErrors.port;
-    }
-    if (fieldErrors.user) {
-        userError.textContent = fieldErrors.user;
-    }
-    if (fieldErrors.database) {
-        databaseError.textContent = fieldErrors.database;
-    }
+  errorMessage.textContent = message;
+  errorMessage.style.display = 'block';
+
+  if (fieldErrors.name) {
+    nameError.textContent = fieldErrors.name;
+  }
+  if (fieldErrors.host) {
+    hostError.textContent = fieldErrors.host;
+  }
+  if (fieldErrors.port) {
+    portError.textContent = fieldErrors.port;
+  }
+  if (fieldErrors.user) {
+    userError.textContent = fieldErrors.user;
+  }
+  if (fieldErrors.database) {
+    databaseError.textContent = fieldErrors.database;
+  }
 }
 
 // テスト接続ボタンのイベントリスナー
 const testConnectionButton = document.getElementById('test-connection');
 testConnectionButton.addEventListener('click', () => {
-    // フォームのバリデーション
-    if (!validateForm()) {
-        return;
-    }
-    
-    const host = hostInput.value;
-    const port = portInput.value;
-    const user = userInput.value;
-    const password = passwordInput.value;
-    const database = databaseInput.value;
-    
-    // テスト接続リクエスト
-    vscode.postMessage({
-        command: 'testDatabaseConnection',
-        database: {
-            host,
-            port: parseInt(port),
-            user,
-            password,
-            database
-        }
-    });
-    
-    // ボタンを無効化して「テスト中...」に変更
-    testConnectionButton.disabled = true;
-    testConnectionButton.textContent = document.documentElement.lang === 'ja' ? 'テスト中...' : 'Testing...';
+  // フォームのバリデーション
+  if (!validateForm()) {
+    return;
+  }
+
+  const host = hostInput.value;
+  const port = portInput.value;
+  const user = userInput.value;
+  const password = passwordInput.value;
+  const database = databaseInput.value;
+
+  // テスト接続リクエスト
+  vscode.postMessage({
+    command: 'testDatabaseConnection',
+    database: {
+      host,
+      port: parseInt(port),
+      user,
+      password,
+      database,
+    },
+  });
+
+  // ボタンを無効化して「テスト中...」に変更
+  testConnectionButton.disabled = true;
+  testConnectionButton.textContent =
+    document.documentElement.lang === 'ja' ? 'テスト中...' : 'Testing...';
 });
 
 function selectDatabase(db) {
-    currentDbId = db.id;
-    document.getElementById('db-name').value = db.name;
-    document.getElementById('db-provider').value = db.provider;
-    document.getElementById('db-host').value = db.host;
-    document.getElementById('db-port').value = db.port;
-    document.getElementById('db-user').value = db.user;
-    document.getElementById('db-password').value = db.password;
-    document.getElementById('db-database').value = db.database;
+  currentDbId = db.id;
+  document.getElementById('db-name').value = db.name;
+  document.getElementById('db-provider').value = db.provider;
+  document.getElementById('db-host').value = db.host;
+  document.getElementById('db-port').value = db.port;
+  document.getElementById('db-user').value = db.user;
+  document.getElementById('db-password').value = db.password;
+  document.getElementById('db-database').value = db.database;
 }
 
 function createDatabaseElement(database) {
-    const div = document.createElement('div');
-    div.className = 'database-item';
-    div.innerHTML = `
+  const div = document.createElement('div');
+  div.className = 'database-item';
+  div.innerHTML = `
         <div class="form-group">
             <input type="text" value="${database.name}" readonly>
             <button class="edit-database vscode-button" data-id="${database.id}">
@@ -132,133 +133,150 @@ function createDatabaseElement(database) {
             </button>
         </div>
     `;
-    return div;
+  return div;
 }
 
 // データベース追加画面を表示
 addDatabaseButton.addEventListener('click', () => {
-    // フォームをリセット
-    currentDbId = null;
-    dbFormTitle.textContent = document.documentElement.lang === 'ja' ? 'データベースを追加' : 'Add Database';
-    document.getElementById('db-name').value = '';
-    document.getElementById('db-provider').value = 'mysql';
-    document.getElementById('db-host').value = 'localhost';
-    document.getElementById('db-port').value = '3306';
-    document.getElementById('db-user').value = 'root';
-    document.getElementById('db-password').value = '';
-    document.getElementById('db-database').value = '';
-    
-    // エラーをクリア
-    clearErrors();
-    
-    // 画面切り替え
-    settingsPage.style.display = 'none';
-    databaseForm.style.display = 'block';
+  // フォームをリセット
+  currentDbId = null;
+  dbFormTitle.textContent =
+    document.documentElement.lang === 'ja' ? 'データベースを追加' : 'Add Database';
+  document.getElementById('db-name').value = '';
+  document.getElementById('db-provider').value = 'mysql';
+  document.getElementById('db-host').value = 'localhost';
+  document.getElementById('db-port').value = '3306';
+  document.getElementById('db-user').value = 'root';
+  document.getElementById('db-password').value = '';
+  document.getElementById('db-database').value = '';
+
+  // エラーをクリア
+  clearErrors();
+
+  // 画面切り替え
+  settingsPage.style.display = 'none';
+  databaseForm.style.display = 'block';
 });
 
 // 設定画面に戻る
 backToSettingsButton.addEventListener('click', () => {
-    settingsPage.style.display = 'block';
-    databaseForm.style.display = 'none';
+  settingsPage.style.display = 'block';
+  databaseForm.style.display = 'none';
 });
 
 cancelDbButton.addEventListener('click', () => {
-    settingsPage.style.display = 'block';
-    databaseForm.style.display = 'none';
+  settingsPage.style.display = 'block';
+  databaseForm.style.display = 'none';
 });
 
 // フォームのバリデーション
 function validateForm() {
-    let isValid = true;
-    const fieldErrors = {};
-    
-    clearErrors();
-    
-    if (!nameInput.value.trim()) {
-        fieldErrors.name = document.documentElement.lang === 'ja' ? '名前を入力してください' : 'Name is required';
-        isValid = false;
-    }
-    
-    if (!hostInput.value.trim()) {
-        fieldErrors.host = document.documentElement.lang === 'ja' ? 'ホストを入力してください' : 'Host is required';
-        isValid = false;
-    }
-    
-    if (!portInput.value) {
-        fieldErrors.port = document.documentElement.lang === 'ja' ? 'ポートを入力してください' : 'Port is required';
-        isValid = false;
-    } else if (isNaN(parseInt(portInput.value))) {
-        fieldErrors.port = document.documentElement.lang === 'ja' ? 'ポートは数値で入力してください' : 'Port must be a number';
-        isValid = false;
-    }
-    
-    if (!userInput.value.trim()) {
-        fieldErrors.user = document.documentElement.lang === 'ja' ? 'ユーザーを入力してください' : 'User is required';
-        isValid = false;
-    }
-    
-    if (!databaseInput.value.trim()) {
-        fieldErrors.database = document.documentElement.lang === 'ja' ? 'データベース名を入力してください' : 'Database name is required';
-        isValid = false;
-    }
-    
-    if (!isValid) {
-        showError(document.documentElement.lang === 'ja' ? '必須項目を入力してください' : 'Please fill in all required fields', fieldErrors);
-    }
-    
-    return isValid;
+  let isValid = true;
+  const fieldErrors = {};
+
+  clearErrors();
+
+  if (!nameInput.value.trim()) {
+    fieldErrors.name =
+      document.documentElement.lang === 'ja' ? '名前を入力してください' : 'Name is required';
+    isValid = false;
+  }
+
+  if (!hostInput.value.trim()) {
+    fieldErrors.host =
+      document.documentElement.lang === 'ja' ? 'ホストを入力してください' : 'Host is required';
+    isValid = false;
+  }
+
+  if (!portInput.value) {
+    fieldErrors.port =
+      document.documentElement.lang === 'ja' ? 'ポートを入力してください' : 'Port is required';
+    isValid = false;
+  } else if (isNaN(parseInt(portInput.value))) {
+    fieldErrors.port =
+      document.documentElement.lang === 'ja'
+        ? 'ポートは数値で入力してください'
+        : 'Port must be a number';
+    isValid = false;
+  }
+
+  if (!userInput.value.trim()) {
+    fieldErrors.user =
+      document.documentElement.lang === 'ja' ? 'ユーザーを入力してください' : 'User is required';
+    isValid = false;
+  }
+
+  if (!databaseInput.value.trim()) {
+    fieldErrors.database =
+      document.documentElement.lang === 'ja'
+        ? 'データベース名を入力してください'
+        : 'Database name is required';
+    isValid = false;
+  }
+
+  if (!isValid) {
+    showError(
+      document.documentElement.lang === 'ja'
+        ? '必須項目を入力してください'
+        : 'Please fill in all required fields',
+      fieldErrors
+    );
+  }
+
+  return isValid;
 }
 
 // データベースを保存
 saveDbButton.addEventListener('click', () => {
-    if (!validateForm()) {
-        return;
-    }
-    
-    const name = nameInput.value;
-    const provider = document.getElementById('db-provider').value;
-    const host = hostInput.value;
-    const port = portInput.value;
-    const user = userInput.value;
-    const password = passwordInput.value;
-    const database = databaseInput.value;
-    
-    vscode.postMessage({
-        command: 'saveDatabase',
-        database: {
-            id: currentDbId,
-            name,
-            provider,
-            host,
-            port: parseInt(port),
-            user,
-            password,
-            database
-        }
-    });
+  if (!validateForm()) {
+    return;
+  }
+
+  const name = nameInput.value;
+  const provider = document.getElementById('db-provider').value;
+  const host = hostInput.value;
+  const port = portInput.value;
+  const user = userInput.value;
+  const password = passwordInput.value;
+  const database = databaseInput.value;
+
+  vscode.postMessage({
+    command: 'saveDatabase',
+    database: {
+      id: currentDbId,
+      name,
+      provider,
+      host,
+      port: parseInt(port),
+      user,
+      password,
+      database,
+    },
+  });
 });
 
 // データベース一覧のイベント
 databaseList.addEventListener('click', (e) => {
-    const target = e.target.closest('.edit-database, .delete-database');
-    if (!target) return;
-    
-    if (target.classList.contains('edit-database')) {
-        const databaseId = target.dataset.id;
-        const database = databases.find(db => db.id === databaseId);
-        
-        if (database) {
-            dbFormTitle.textContent = document.documentElement.lang === 'ja' ? 'データベースを編集' : 'Edit Database';
-            selectDatabase(database);
-            settingsPage.style.display = 'none';
-            databaseForm.style.display = 'block';
-        }
-    } else if (target.classList.contains('delete-database')) {
-        vscode.postMessage({
-            command: 'deleteDatabase',
-            databaseId: target.dataset.id
-        });
+  const target = e.target.closest('.edit-database, .delete-database');
+  if (!target) return;
+
+  if (target.classList.contains('edit-database')) {
+    const databaseId = target.dataset.id;
+    const database = databases.find((db) => db.id === databaseId);
+
+    if (database) {
+      dbFormTitle.textContent =
+        document.documentElement.lang === 'ja' ? 'データベースを編集' : 'Edit Database';
+      selectDatabase(database);
+      settingsPage.style.display = 'none';
+      databaseForm.style.display = 'block';
     }
+  } else if (target.classList.contains('delete-database')) {
+    vscode.postMessage({
+      command: 'deleteDatabase',
+      databaseId: target.dataset.id,
+    });
+  }
 });
 
 // AI settings
@@ -267,55 +285,59 @@ const apiKeyInput = document.getElementById('api-key');
 const saveAiConfigButton = document.getElementById('save-ai-config');
 
 saveAiConfigButton.addEventListener('click', () => {
-    vscode.postMessage({
-        command: 'updateAIConfig',
-        model: aiModelDropdown.value,
-        apiKey: apiKeyInput.value
-    });
+  vscode.postMessage({
+    command: 'updateAIConfig',
+    model: aiModelDropdown.value,
+    apiKey: apiKeyInput.value,
+  });
 });
 
 // Handle messages from extension
 window.addEventListener('message', (event) => {
-    const message = event.data;
-    switch (message.command) {
-        case 'updateDatabases':
-            databases = message.databases;
-            databaseList.innerHTML = '';
-            databases.forEach(db => {
-                databaseList.appendChild(createDatabaseElement(db));
-            });
-            break;
-        case 'updateLanguage':
-            languageDropdown.value = message.language;
-            break;
-        case 'updateAIConfig':
-            aiModelDropdown.value = message.model;
-            apiKeyInput.value = message.apiKey;
-            break;
-        case 'showDatabaseError':
-            showError(message.message, message.fieldErrors || {});
-            break;
-        case 'databaseSaved':
-            settingsPage.style.display = 'block';
-            databaseForm.style.display = 'none';
-            break;
-        case 'testConnectionResult':
-            // テスト接続ボタンを元に戻す
-            testConnectionButton.disabled = false;
-            testConnectionButton.textContent = document.documentElement.lang === 'ja' ?
-                '接続テスト' : 'Test Connection';
-            
-            // 結果に応じてメッセージを表示
-            if (message.success) {
-                vscode.postMessage({
-                    command: 'showError',
-                    message: document.documentElement.lang === 'ja' ?
-                        'データベースに接続しました' : 'Connected to database successfully'
-                });
-            } else {
-                showError(message.error || (document.documentElement.lang === 'ja' ?
-                    'データベースへの接続に失敗しました' : 'Failed to connect to database'));
-            }
-            break;
-    }
+  const message = event.data;
+  switch (message.command) {
+    case 'updateDatabases':
+      databases = message.databases;
+      databaseList.innerHTML = '';
+      databases.forEach((db) => {
+        databaseList.appendChild(createDatabaseElement(db));
+      });
+      break;
+    case 'updateLanguage':
+      languageDropdown.value = message.language;
+      break;
+    case 'updateAIConfig':
+      aiModelDropdown.value = message.model;
+      apiKeyInput.value = message.apiKey;
+      break;
+    case 'showDatabaseError':
+      showError(message.message, message.fieldErrors || {});
+      break;
+    case 'databaseSaved':
+      settingsPage.style.display = 'block';
+      databaseForm.style.display = 'none';
+      break;
+    case 'testConnectionResult':
+      // テスト接続ボタンを元に戻す
+      testConnectionButton.disabled = false;
+      testConnectionButton.textContent =
+        document.documentElement.lang === 'ja' ? '接続テスト' : 'Test Connection';
+
+      // 結果に応じてメッセージを表示
+      if (message.success) {
+        vscode.window.showInformationMessage(
+          document.documentElement.lang === 'ja'
+            ? 'データベースに接続しました'
+            : 'Connected to database successfully'
+        );
+      } else {
+        showError(
+          message.error ||
+            (document.documentElement.lang === 'ja'
+              ? 'データベースへの接続に失敗しました'
+              : 'Failed to connect to database')
+        );
+      }
+      break;
+  }
 });

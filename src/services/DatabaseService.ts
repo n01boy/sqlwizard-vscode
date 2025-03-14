@@ -2,87 +2,88 @@ import * as mysql from 'mysql2/promise';
 import { DatabaseConfig, DatabaseSchema, TableEntity } from '../models/interfaces';
 
 export class DatabaseService {
-    private static instance: DatabaseService;
-    private connections: Map<string, mysql.Connection>;
-    private schemas: Map<string, DatabaseSchema>;
+  private static instance: DatabaseService;
+  private connections: Map<string, mysql.Connection>;
+  private schemas: Map<string, DatabaseSchema>;
 
-    private constructor() {
-        this.connections = new Map();
-        this.schemas = new Map();
+  private constructor() {
+    this.connections = new Map();
+    this.schemas = new Map();
+  }
+
+  static getInstance(): DatabaseService {
+    if (!DatabaseService.instance) {
+      DatabaseService.instance = new DatabaseService();
+    }
+    return DatabaseService.instance;
+  }
+
+  async connect(config: DatabaseConfig): Promise<void> {
+    try {
+      const connection = await mysql.createConnection({
+        host: config.host,
+        port: config.port,
+        user: config.user,
+        password: config.password,
+        database: config.database,
+      });
+
+      this.connections.set(config.id, connection);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to connect to database: ${error.message}`);
+      }
+      throw new Error('Failed to connect to database: Unknown error');
+    }
+  }
+
+  async disconnect(databaseId: string): Promise<void> {
+    const connection = this.connections.get(databaseId);
+    if (connection) {
+      await connection.end();
+      this.connections.delete(databaseId);
+      this.schemas.delete(databaseId);
+    }
+  }
+
+  async fetchSchema(databaseId: string): Promise<DatabaseSchema> {
+    const cachedSchema = this.schemas.get(databaseId);
+    if (cachedSchema) {
+      return cachedSchema;
     }
 
-    static getInstance(): DatabaseService {
-        if (!DatabaseService.instance) {
-            DatabaseService.instance = new DatabaseService();
-        }
-        return DatabaseService.instance;
+    const connection = this.connections.get(databaseId);
+    if (!connection) {
+      throw new Error(`No connection found for database ${databaseId}`);
     }
 
-    async connect(config: DatabaseConfig): Promise<void> {
-        try {
-            const connection = await mysql.createConnection({
-                host: config.host,
-                port: config.port,
-                user: config.user,
-                password: config.password,
-                database: config.database
-            });
+    try {
+      const tables = await this.fetchTables(connection);
+      const schema: DatabaseSchema = {
+        tables,
+        relationships: await this.extractRelationships(tables),
+      };
 
-            this.connections.set(config.id, connection);
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to connect to database: ${error.message}`);
-            }
-            throw new Error('Failed to connect to database: Unknown error');
-        }
+      this.schemas.set(databaseId, schema);
+      return schema;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to fetch database schema: ${error.message}`);
+      }
+      throw new Error('Failed to fetch database schema: Unknown error');
     }
+  }
 
-    async disconnect(databaseId: string): Promise<void> {
-        const connection = this.connections.get(databaseId);
-        if (connection) {
-            await connection.end();
-            this.connections.delete(databaseId);
-            this.schemas.delete(databaseId);
-        }
-    }
+  private async fetchTables(connection: mysql.Connection): Promise<TableEntity[]> {
+    const tables: TableEntity[] = [];
+    const [tableRows] = await connection.query('SHOW TABLES');
 
-    async fetchSchema(databaseId: string): Promise<DatabaseSchema> {
-        const cachedSchema = this.schemas.get(databaseId);
-        if (cachedSchema) {
-            return cachedSchema;
-        }
-
-        const connection = this.connections.get(databaseId);
-        if (!connection) {
-            throw new Error(`No connection found for database ${databaseId}`);
-        }
-
-        try {
-            const tables = await this.fetchTables(connection);
-            const schema: DatabaseSchema = {
-                tables,
-                relationships: await this.extractRelationships(tables)
-            };
-
-            this.schemas.set(databaseId, schema);
-            return schema;
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to fetch database schema: ${error.message}`);
-            }
-            throw new Error('Failed to fetch database schema: Unknown error');
-        }
-    }
-
-    private async fetchTables(connection: mysql.Connection): Promise<TableEntity[]> {
-        const tables: TableEntity[] = [];
-        const [tableRows] = await connection.query('SHOW TABLES');
-
-        for (const row of tableRows as any[]) {
-            const tableName = row[Object.keys(row)[0]];
-            const [columns] = await connection.query(`SHOW FULL COLUMNS FROM ${tableName}`);
-            const [indexes] = await connection.query(`SHOW INDEX FROM ${tableName}`);
-            const [foreignKeys] = await connection.query(`
+    for (const row of tableRows as any[]) {
+      const tableName = row[Object.keys(row)[0]];
+      const [columns] = await connection.query(`SHOW FULL COLUMNS FROM ${tableName}`);
+      const [indexes] = await connection.query(`SHOW INDEX FROM ${tableName}`);
+      const [foreignKeys] = await connection.query(
+        `
                 SELECT 
                     COLUMN_NAME,
                     REFERENCED_TABLE_NAME,
@@ -91,104 +92,115 @@ export class DatabaseService {
                 WHERE TABLE_SCHEMA = DATABASE()
                 AND TABLE_NAME = ?
                 AND REFERENCED_TABLE_NAME IS NOT NULL
-            `, [tableName]);
+            `,
+        [tableName]
+      );
 
-            tables.push({
-                tableName,
-                columns: (columns as any[]).map(col => ({
-                    name: col.Field,
-                    type: col.Type,
-                    nullable: col.Null === 'YES',
-                    key: col.Key,
-                    default: col.Default
-                })),
-                indexes: this.processIndexes(indexes as any[]),
-                foreignKeys: (foreignKeys as any[]).map(fk => ({
-                    columnName: fk.COLUMN_NAME,
-                    referencedTable: fk.REFERENCED_TABLE_NAME,
-                    referencedColumn: fk.REFERENCED_COLUMN_NAME
-                }))
-            });
-        }
-
-        return tables;
+      tables.push({
+        tableName,
+        columns: (columns as any[]).map((col) => ({
+          name: col.Field,
+          type: col.Type,
+          nullable: col.Null === 'YES',
+          key: col.Key,
+          default: col.Default,
+        })),
+        indexes: this.processIndexes(indexes as any[]),
+        foreignKeys: (foreignKeys as any[]).map((fk) => ({
+          columnName: fk.COLUMN_NAME,
+          referencedTable: fk.REFERENCED_TABLE_NAME,
+          referencedColumn: fk.REFERENCED_COLUMN_NAME,
+        })),
+      });
     }
 
-    private processIndexes(indexRows: any[]): TableEntity['indexes'] {
-        const indexMap = new Map<string, TableEntity['indexes'][0]>();
+    return tables;
+  }
 
-        for (const row of indexRows) {
-            const indexName = row.Key_name;
-            if (!indexMap.has(indexName)) {
-                // 基本的なインデックス情報
-                const indexType = row.Key_name === 'PRIMARY' ? 'PRIMARY' :
-                                 row.Non_unique === 0 ? 'UNIQUE' :
-                                 row.Index_type === 'FULLTEXT' ? 'FULLTEXT' : 'INDEX';
-                
-                // 追加情報をコメントに含める
-                const additionalInfo = [
-                    `Cardinality: ${row.Cardinality || 'N/A'}`,
-                    `Null: ${row.Null === 'YES' ? 'Allowed' : 'Not Allowed'}`,
-                    `Collation: ${row.Collation || 'N/A'}`,
-                    `Sub_part: ${row.Sub_part || 'N/A'}`
-                ].filter(info => !info.endsWith('N/A')).join(', ');
-                
-                // 既存のコメントと追加情報を結合
-                const comment = row.Index_comment
-                    ? `${row.Index_comment}. ${additionalInfo}`
-                    : additionalInfo;
-                
-                indexMap.set(indexName, {
-                    name: indexName,
-                    columns: [],
-                    type: indexType,
-                    method: row.Index_type.toUpperCase() as 'BTREE' | 'HASH',
-                    comment: comment || undefined
-                });
-            }
-            indexMap.get(indexName)!.columns.push(row.Column_name);
-        }
+  private processIndexes(indexRows: any[]): TableEntity['indexes'] {
+    const indexMap = new Map<string, TableEntity['indexes'][0]>();
 
-        return Array.from(indexMap.values());
+    for (const row of indexRows) {
+      const indexName = row.Key_name;
+      if (!indexMap.has(indexName)) {
+        // 基本的なインデックス情報
+        const indexType =
+          row.Key_name === 'PRIMARY'
+            ? 'PRIMARY'
+            : row.Non_unique === 0
+              ? 'UNIQUE'
+              : row.Index_type === 'FULLTEXT'
+                ? 'FULLTEXT'
+                : 'INDEX';
+
+        // 追加情報をコメントに含める
+        const additionalInfo = [
+          `Cardinality: ${row.Cardinality || 'N/A'}`,
+          `Null: ${row.Null === 'YES' ? 'Allowed' : 'Not Allowed'}`,
+          `Collation: ${row.Collation || 'N/A'}`,
+          `Sub_part: ${row.Sub_part || 'N/A'}`,
+        ]
+          .filter((info) => !info.endsWith('N/A'))
+          .join(', ');
+
+        // 既存のコメントと追加情報を結合
+        const comment = row.Index_comment
+          ? `${row.Index_comment}. ${additionalInfo}`
+          : additionalInfo;
+
+        indexMap.set(indexName, {
+          name: indexName,
+          columns: [],
+          type: indexType,
+          method: row.Index_type.toUpperCase() as 'BTREE' | 'HASH',
+          comment: comment || undefined,
+        });
+      }
+      indexMap.get(indexName)!.columns.push(row.Column_name);
     }
 
-    private async extractRelationships(tables: TableEntity[]): Promise<DatabaseSchema['relationships']> {
-        const relationships: DatabaseSchema['relationships'] = [];
+    return Array.from(indexMap.values());
+  }
 
-        for (const table of tables) {
-            for (const fk of table.foreignKeys) {
-                const referencedTable = tables.find(t => t.tableName === fk.referencedTable);
-                if (!referencedTable) continue;
+  private async extractRelationships(
+    tables: TableEntity[]
+  ): Promise<DatabaseSchema['relationships']> {
+    const relationships: DatabaseSchema['relationships'] = [];
 
-                const fromColumn = table.columns.find(c => c.name === fk.columnName);
-                const toColumn = referencedTable.columns.find(c => c.name === fk.referencedColumn);
+    for (const table of tables) {
+      for (const fk of table.foreignKeys) {
+        const referencedTable = tables.find((t) => t.tableName === fk.referencedTable);
+        if (!referencedTable) continue;
 
-                if (!fromColumn || !toColumn) continue;
+        const fromColumn = table.columns.find((c) => c.name === fk.columnName);
+        const toColumn = referencedTable.columns.find((c) => c.name === fk.referencedColumn);
 
-                const type = this.determineRelationshipType(fromColumn, toColumn);
-                relationships.push({
-                    fromTable: table.tableName,
-                    fromColumn: fk.columnName,
-                    toTable: fk.referencedTable,
-                    toColumn: fk.referencedColumn,
-                    type
-                });
-            }
-        }
+        if (!fromColumn || !toColumn) continue;
 
-        return relationships;
+        const type = this.determineRelationshipType(fromColumn, toColumn);
+        relationships.push({
+          fromTable: table.tableName,
+          fromColumn: fk.columnName,
+          toTable: fk.referencedTable,
+          toColumn: fk.referencedColumn,
+          type,
+        });
+      }
     }
 
-    private determineRelationshipType(
-        fromColumn: TableEntity['columns'][0],
-        toColumn: TableEntity['columns'][0]
-    ): DatabaseSchema['relationships'][0]['type'] {
-        const isFromUnique = fromColumn.key === 'UNI' || fromColumn.key === 'PRI';
-        const isToUnique = toColumn.key === 'UNI' || toColumn.key === 'PRI';
+    return relationships;
+  }
 
-        if (isFromUnique && isToUnique) return 'one-to-one';
-        if (isFromUnique && !isToUnique) return 'many-to-one';
-        if (!isFromUnique && isToUnique) return 'one-to-many';
-        return 'many-to-many';
-    }
+  private determineRelationshipType(
+    fromColumn: TableEntity['columns'][0],
+    toColumn: TableEntity['columns'][0]
+  ): DatabaseSchema['relationships'][0]['type'] {
+    const isFromUnique = fromColumn.key === 'UNI' || fromColumn.key === 'PRI';
+    const isToUnique = toColumn.key === 'UNI' || toColumn.key === 'PRI';
+
+    if (isFromUnique && isToUnique) return 'one-to-one';
+    if (isFromUnique && !isToUnique) return 'many-to-one';
+    if (!isFromUnique && isToUnique) return 'one-to-many';
+    return 'many-to-many';
+  }
 }

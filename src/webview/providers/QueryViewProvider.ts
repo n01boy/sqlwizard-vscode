@@ -1,40 +1,55 @@
 import * as vscode from 'vscode';
 import { StorageService } from '../../services/StorageService';
 import { I18nService } from '../../services/I18nService';
-
+const isDev = process.env.NODE_ENV === 'local';
 export class QueryViewProvider implements vscode.WebviewViewProvider {
-    private view?: vscode.WebviewView;
+  private view?: vscode.WebviewView;
 
-    constructor(private readonly extensionUri: vscode.Uri) {}
+  constructor(private readonly extensionUri: vscode.Uri) {}
 
-    resolveWebviewView(
-        webviewView: vscode.WebviewView,
-        context: vscode.WebviewViewResolveContext,
-        token: vscode.CancellationToken
-    ) {
-        this.view = webviewView;
+  resolveWebviewView(
+    webviewView: vscode.WebviewView,
+    context: vscode.WebviewViewResolveContext,
+    token: vscode.CancellationToken
+  ) {
+    this.view = webviewView;
 
-        webviewView.webview.options = {
-            enableScripts: true,
-            localResourceRoots: [this.extensionUri]
-        };
+    webviewView.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [this.extensionUri],
+    };
 
-        webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
+    webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
 
-        this.setWebviewMessageListener(webviewView.webview);
-        
-        // 初期データの送信
-        this.updateDatabases();
-        this.updatePromptHistory();
-    }
+    this.setWebviewMessageListener(webviewView.webview);
 
-    private getHtmlForWebview(webview: vscode.Webview) {
-        const i18n = I18nService.getInstance();
-        const commonStylesUri = this.getUri(webview, ['src', 'webview', 'styles', 'common.css']);
-        const queryStylesUri = this.getUri(webview, ['src', 'webview', 'styles', 'query.css']);
-        const scriptUri = this.getUri(webview, ['src', 'webview', 'query', 'queryScript.js']);
+    // 初期データの送信
+    this.updateDatabases();
+    this.updatePromptHistory();
+  }
 
-        return `
+  private getHtmlForWebview(webview: vscode.Webview) {
+    const i18n = I18nService.getInstance();
+    const commonStylesUri = this.getUri(webview, [
+      isDev ? 'src' : 'out',
+      'webview',
+      'styles',
+      'common.css',
+    ]);
+    const queryStylesUri = this.getUri(webview, [
+      isDev ? 'src' : 'out',
+      'webview',
+      'styles',
+      'query.css',
+    ]);
+    const scriptUri = this.getUri(webview, [
+      isDev ? 'src' : 'out',
+      'webview',
+      'query',
+      'queryScript.js',
+    ]);
+
+    return `
             <!DOCTYPE html>
             <html lang="${i18n.getCurrentLanguage()}">
             <head>
@@ -101,124 +116,125 @@ export class QueryViewProvider implements vscode.WebviewViewProvider {
             </body>
             </html>
         `;
-    }
+  }
 
-    private getUri(webview: vscode.Webview, pathList: string[]) {
-        return webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, ...pathList));
-    }
+  private getUri(webview: vscode.Webview, pathList: string[]) {
+    return webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, ...pathList));
+  }
 
-    private setWebviewMessageListener(webview: vscode.Webview) {
-        webview.onDidReceiveMessage(
-            async (message: any) => {
-                const i18n = I18nService.getInstance();
+  private setWebviewMessageListener(webview: vscode.Webview) {
+    webview.onDidReceiveMessage(async (message: any) => {
+      const i18n = I18nService.getInstance();
 
-                switch (message.command) {
-                    case 'generateSQL':
-                        try {
-                            const result = await vscode.commands.executeCommand('sqlwizard.generateSQL', {
-                                databaseId: message.databaseId,
-                                prompt: message.prompt
-                            });
-                            webview.postMessage({
-                                command: 'showResult',
-                                result
-                            });
-                        } catch (error) {
-                            vscode.window.showErrorMessage(i18n.t('messages.error.generation'));
-                            
-                            // エラー通知をWebviewに送信してローディングを非表示にする
-                            webview.postMessage({
-                                command: 'showError',
-                                message: i18n.t('messages.error.generation')
-                            });
-                        }
-                        break;
-
-                    case 'copySQL':
-                        try {
-                            await vscode.env.clipboard.writeText(message.sql);
-                            vscode.window.showInformationMessage(i18n.t('messages.success.copied'));
-                        } catch (error) {
-                            vscode.window.showErrorMessage(i18n.t('messages.error.copy'));
-                        }
-                        break;
-
-                    case 'executeSQL':
-                        try {
-                            await vscode.commands.executeCommand('sqlwizard.executeSQL', {
-                                databaseId: message.databaseId,
-                                sql: message.sql
-                            });
-                        } catch (error) {
-                            vscode.window.showErrorMessage(i18n.t('messages.error.execution'));
-                        }
-                        break;
-
-                    case 'showError':
-                        vscode.window.showErrorMessage(message.message);
-                        break;
-                        
-                    case 'openSQLInEditor':
-                        try {
-                            await vscode.commands.executeCommand('sqlwizard.openSQLInEditor', message.sql);
-                        } catch (error) {
-                            vscode.window.showErrorMessage(i18n.t('messages.error.validation'));
-                        }
-                        break;
-                        
-                    case 'fetchDatabaseSchema':
-                        try {
-                            const schema = await vscode.commands.executeCommand('sqlwizard.fetchDatabaseSchema', message.databaseId);
-                            webview.postMessage({
-                                command: 'updateTableList',
-                                schema
-                            });
-                        } catch (error) {
-                            vscode.window.showErrorMessage(i18n.t('messages.error.schema'));
-                            webview.postMessage({
-                                command: 'databaseSchemaFetched'
-                            });
-                        }
-                        break;
-                }
-            }
-        );
-    }
-
-    updateDatabases() {
-        if (this.view) {
-            this.view.webview.postMessage({
-                command: 'updateDatabases',
-                databases: StorageService.getInstance().getDatabases()
+      switch (message.command) {
+        case 'generateSQL':
+          try {
+            const result = await vscode.commands.executeCommand('sqlwizard.generateSQL', {
+              databaseId: message.databaseId,
+              prompt: message.prompt,
             });
-        }
-    }
-
-    updateLanguage(language: string) {
-        if (this.view) {
-            // クエリパネルは言語変更時に再読み込みが必要
-            this.view.webview.html = this.getHtmlForWebview(this.view.webview);
-            this.updateDatabases();
-        }
-    }
-
-    // プロンプト履歴を更新
-    updatePromptHistory() {
-        if (this.view) {
-            this.view.webview.postMessage({
-                command: 'updatePromptHistory',
-                history: StorageService.getInstance().getPromptHistory()
+            webview.postMessage({
+              command: 'showResult',
+              result,
             });
-        }
-    }
+          } catch (error) {
+            vscode.window.showErrorMessage(i18n.t('messages.error.generation'));
 
-    // テーブル一覧を更新
-    updateTableList(schema: any) {
-        if (this.view) {
-            this.view.webview.postMessage({
-                command: 'updateTableList',
-                schema: schema
+            // エラー通知をWebviewに送信してローディングを非表示にする
+            webview.postMessage({
+              command: 'showError',
+              message: i18n.t('messages.error.generation'),
             });
-        }
+          }
+          break;
+
+        case 'copySQL':
+          try {
+            await vscode.env.clipboard.writeText(message.sql);
+            vscode.window.showInformationMessage(i18n.t('messages.success.copied'));
+          } catch (error) {
+            vscode.window.showErrorMessage(i18n.t('messages.error.copy'));
+          }
+          break;
+
+        case 'executeSQL':
+          try {
+            await vscode.commands.executeCommand('sqlwizard.executeSQL', {
+              databaseId: message.databaseId,
+              sql: message.sql,
+            });
+          } catch (error) {
+            vscode.window.showErrorMessage(i18n.t('messages.error.execution'));
+          }
+          break;
+
+        case 'showError':
+          vscode.window.showErrorMessage(message.message);
+          break;
+
+        case 'openSQLInEditor':
+          try {
+            await vscode.commands.executeCommand('sqlwizard.openSQLInEditor', message.sql);
+          } catch (error) {
+            vscode.window.showErrorMessage(i18n.t('messages.error.validation'));
+          }
+          break;
+
+        case 'fetchDatabaseSchema':
+          try {
+            const schema = await vscode.commands.executeCommand(
+              'sqlwizard.fetchDatabaseSchema',
+              message.databaseId
+            );
+            webview.postMessage({
+              command: 'updateTableList',
+              schema,
+            });
+          } catch (error) {
+            vscode.window.showErrorMessage(i18n.t('messages.error.schema'));
+            webview.postMessage({
+              command: 'databaseSchemaFetched',
+            });
+          }
+          break;
+      }
+    });
+  }
+
+  updateDatabases() {
+    if (this.view) {
+      this.view.webview.postMessage({
+        command: 'updateDatabases',
+        databases: StorageService.getInstance().getDatabases(),
+      });
     }
+  }
+
+  updateLanguage(language: string) {
+    if (this.view) {
+      // クエリパネルは言語変更時に再読み込みが必要
+      this.view.webview.html = this.getHtmlForWebview(this.view.webview);
+      this.updateDatabases();
+    }
+  }
+
+  // プロンプト履歴を更新
+  updatePromptHistory() {
+    if (this.view) {
+      this.view.webview.postMessage({
+        command: 'updatePromptHistory',
+        history: StorageService.getInstance().getPromptHistory(),
+      });
+    }
+  }
+
+  // テーブル一覧を更新
+  updateTableList(schema: any) {
+    if (this.view) {
+      this.view.webview.postMessage({
+        command: 'updateTableList',
+        schema: schema,
+      });
+    }
+  }
 }

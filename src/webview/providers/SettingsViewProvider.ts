@@ -4,141 +4,142 @@ import { I18nService } from '../../services/I18nService';
 import { getSettingsViewHtml } from './SettingsViewTemplate';
 
 export class SettingsViewProvider implements vscode.WebviewViewProvider {
-    private view?: vscode.WebviewView;
+  private view?: vscode.WebviewView;
 
-    constructor(private readonly extensionUri: vscode.Uri) {}
+  constructor(private readonly extensionUri: vscode.Uri) {}
 
-    resolveWebviewView(
-        webviewView: vscode.WebviewView,
-        context: vscode.WebviewViewResolveContext,
-        token: vscode.CancellationToken
-    ) {
-        this.view = webviewView;
+  resolveWebviewView(
+    webviewView: vscode.WebviewView,
+    context: vscode.WebviewViewResolveContext,
+    token: vscode.CancellationToken
+  ) {
+    this.view = webviewView;
 
-        webviewView.webview.options = {
-            enableScripts: true,
-            localResourceRoots: [this.extensionUri]
-        };
+    webviewView.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [this.extensionUri],
+    };
 
-        webviewView.webview.html = getSettingsViewHtml(webviewView.webview, this.extensionUri);
+    webviewView.webview.html = getSettingsViewHtml(webviewView.webview, this.extensionUri);
 
-        this.setWebviewMessageListener(webviewView.webview);
-        
-        // 初期データの送信
-        this.updateDatabases();
-        this.updateLanguage(StorageService.getInstance().getLanguage());
-        this.updateAIConfig();
-    }
+    this.setWebviewMessageListener(webviewView.webview);
 
-    private getUri(webview: vscode.Webview, pathList: string[]) {
-        return webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, ...pathList));
-    }
+    // 初期データの送信
+    this.updateDatabases();
+    this.updateLanguage(StorageService.getInstance().getLanguage());
+    this.updateAIConfig();
+  }
 
-    private setWebviewMessageListener(webview: vscode.Webview) {
-        webview.onDidReceiveMessage(
-            async (message: any) => {
-                const i18n = I18nService.getInstance();
+  private getUri(webview: vscode.Webview, pathList: string[]) {
+    return webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, ...pathList));
+  }
 
-                switch (message.command) {
-                    case 'changeLanguage':
-                        try {
-                            await vscode.commands.executeCommand('sqlwizard.changeLanguage', message.language);
-                        } catch (error) {
-                            vscode.window.showErrorMessage(i18n.t('messages.error.validation'));
-                        }
-                        break;
+  private setWebviewMessageListener(webview: vscode.Webview) {
+    webview.onDidReceiveMessage(async (message: any) => {
+      const i18n = I18nService.getInstance();
 
-                    case 'saveDatabase':
-                        try {
-                            await vscode.commands.executeCommand('sqlwizard.saveDatabase', message.database);
-                            webview.postMessage({
-                                command: 'databaseSaved'
-                            });
-                        } catch (error) {
-                            let errorMessage = i18n.t('messages.error.validation');
-                            if (error instanceof Error) {
-                                errorMessage = error.message;
-                            }
-                            
-                            webview.postMessage({
-                                command: 'showDatabaseError',
-                                message: errorMessage
-                            });
-                        }
-                        break;
+      switch (message.command) {
+        case 'changeLanguage':
+          try {
+            await vscode.commands.executeCommand('sqlwizard.changeLanguage', message.language);
+          } catch (error) {
+            vscode.window.showErrorMessage(i18n.t('messages.error.validation'));
+          }
+          break;
 
-                    case 'deleteDatabase':
-                        await vscode.commands.executeCommand('sqlwizard.deleteDatabase', message.databaseId);
-                        break;
-                        
-                    case 'testDatabaseConnection':
-                        try {
-                            const result = await vscode.commands.executeCommand('sqlwizard.testDatabaseConnection', message.database) as { success: boolean; error?: string };
-                            webview.postMessage({
-                                command: 'testConnectionResult',
-                                success: result.success,
-                                error: result.error
-                            });
-                        } catch (error) {
-                            let errorMessage = i18n.t('messages.error.connection');
-                            if (error instanceof Error) {
-                                errorMessage = error.message;
-                            }
-                            
-                            webview.postMessage({
-                                command: 'testConnectionResult',
-                                success: false,
-                                error: errorMessage
-                            });
-                        }
-                        break;
-
-                    case 'updateAIConfig':
-                        try {
-                            await vscode.commands.executeCommand('sqlwizard.updateAIConfig', {
-                                model: message.model,
-                                apiKey: message.apiKey
-                            });
-                            vscode.window.showInformationMessage(i18n.t('messages.success.saved'));
-                        } catch (error) {
-                            vscode.window.showErrorMessage(i18n.t('messages.error.validation'));
-                        }
-                        break;
-
-                    case 'showError':
-                        vscode.window.showErrorMessage(message.message);
-                        break;
-                }
+        case 'saveDatabase':
+          try {
+            await vscode.commands.executeCommand('sqlwizard.saveDatabase', message.database);
+            webview.postMessage({
+              command: 'databaseSaved',
+            });
+          } catch (error) {
+            let errorMessage = i18n.t('messages.error.validation');
+            if (error instanceof Error) {
+              errorMessage = error.message;
             }
-        );
-    }
 
-    updateDatabases() {
-        if (this.view) {
-            this.view.webview.postMessage({
-                command: 'updateDatabases',
-                databases: StorageService.getInstance().getDatabases()
+            webview.postMessage({
+              command: 'showDatabaseError',
+              message: errorMessage,
             });
-        }
-    }
+          }
+          break;
 
-    updateLanguage(language: string) {
-        if (this.view) {
-            this.view.webview.postMessage({
-                command: 'updateLanguage',
-                language
-            });
-        }
-    }
+        case 'deleteDatabase':
+          await vscode.commands.executeCommand('sqlwizard.deleteDatabase', message.databaseId);
+          break;
 
-    updateAIConfig() {
-        if (this.view) {
-            const aiConfig = StorageService.getInstance().getAIConfig();
-            this.view.webview.postMessage({
-                command: 'updateAIConfig',
-                model: aiConfig.model,
-                apiKey: aiConfig.apiKey
+        case 'testDatabaseConnection':
+          try {
+            const result = (await vscode.commands.executeCommand(
+              'sqlwizard.testDatabaseConnection',
+              message.database
+            )) as { success: boolean; error?: string };
+            webview.postMessage({
+              command: 'testConnectionResult',
+              success: result.success,
+              error: result.error,
             });
-        }
+          } catch (error) {
+            let errorMessage = i18n.t('messages.error.connection');
+            if (error instanceof Error) {
+              errorMessage = error.message;
+            }
+
+            webview.postMessage({
+              command: 'testConnectionResult',
+              success: false,
+              error: errorMessage,
+            });
+          }
+          break;
+
+        case 'updateAIConfig':
+          try {
+            await vscode.commands.executeCommand('sqlwizard.updateAIConfig', {
+              model: message.model,
+              apiKey: message.apiKey,
+            });
+            vscode.window.showInformationMessage(i18n.t('messages.success.saved'));
+          } catch (error) {
+            vscode.window.showErrorMessage(i18n.t('messages.error.validation'));
+          }
+          break;
+
+        case 'showError':
+          vscode.window.showErrorMessage(message.message);
+          break;
+      }
+    });
+  }
+
+  updateDatabases() {
+    if (this.view) {
+      this.view.webview.postMessage({
+        command: 'updateDatabases',
+        databases: StorageService.getInstance().getDatabases(),
+      });
     }
+  }
+
+  updateLanguage(language: string) {
+    if (this.view) {
+      this.view.webview.postMessage({
+        command: 'updateLanguage',
+        language,
+      });
+    }
+  }
+
+  updateAIConfig() {
+    if (this.view) {
+      const aiConfig = StorageService.getInstance().getAIConfig();
+      this.view.webview.postMessage({
+        command: 'updateAIConfig',
+        model: aiConfig.model,
+        apiKey: aiConfig.apiKey,
+      });
+    }
+  }
 }

@@ -1,166 +1,166 @@
 .database-item {
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid var(--vscode-input-border);
-    border-radius: 4px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 4px;
 }
 
 .database-item .form-group {
-    display: flex;
-    gap: 10px;
-    align-items: center;
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
-.database-item input[type="text"] {
-    flex: 1;
+.database-item input[type='text'] {
+  flex: 1;
 }
 
 .section h2 {
-    color: var(--vscode-foreground);
-    font-size: 1.2em;
-    margin-bottom: 1em;
+  color: var(--vscode-foreground);
+  font-size: 1.2em;
+  margin-bottom: 1em;
 }
 
 .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1em;
 }
 
 .section-header h2 {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
-.ai-config input[type="password"] {
-    margin-top: 5px;
+.ai-config input[type='password'] {
+  margin-top: 5px;
 }
 
 .language-selector {
-    max-width: 200px;
+  max-width: 200px;
 }
 
 /* データベース追加・編集画面 */
 .page {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: var(--vscode-editor-background);
-    z-index: 10;
-    overflow-y: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--vscode-editor-background);
+  z-index: 10;
+  overflow-y: auto;
 }
 
 .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--vscode-input-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--vscode-input-border);
 }
 
 .page-header h2 {
-    margin: 0;
+  margin: 0;
 }
 
 .tab-container {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .tab-buttons {
-    display: flex;
-    border-bottom: 1px solid var(--vscode-input-border);
-    margin-bottom: 15px;
+  display: flex;
+  border-bottom: 1px solid var(--vscode-input-border);
+  margin-bottom: 15px;
 }
 
 .tab-button {
-    padding: 8px 16px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--vscode-foreground);
-    opacity: 0.7;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--vscode-foreground);
+  opacity: 0.7;
 }
 
 .tab-button.active {
-    opacity: 1;
-    border-bottom: 2px solid var(--vscode-button-background);
+  opacity: 1;
+  border-bottom: 2px solid var(--vscode-button-background);
 }
 
 .tab-content {
-    display: none;
-    padding-bottom: 15px;
+  display: none;
+  padding-bottom: 15px;
 }
 
 .tab-content.active {
-    display: block;
+  display: block;
 }
 
 .search-container {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .search-results {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid var(--vscode-input-border);
-    border-radius: 4px;
-    margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 4px;
+  margin-top: 10px;
 }
 
 .search-result-item {
-    padding: 8px;
-    cursor: pointer;
-    border-bottom: 1px solid var(--vscode-input-border);
+  padding: 8px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--vscode-input-border);
 }
 
 .search-result-item:hover {
-    background-color: var(--vscode-list-hoverBackground);
+  background-color: var(--vscode-list-hoverBackground);
 }
 
 .search-result-item:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .form-row {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .form-row label {
-    display: block;
-    margin-bottom: 5px;
+  display: block;
+  margin-bottom: 5px;
 }
 
 .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 5px;
+  display: block;
+  margin-bottom: 5px;
 }
 
 /* エラーメッセージ */
 .error-message {
-    background-color: var(--vscode-inputValidation-errorBackground);
-    color: var(--vscode-inputValidation-errorForeground);
-    border: 1px solid var(--vscode-inputValidation-errorBorder);
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 4px;
+  background-color: var(--vscode-inputValidation-errorBackground);
+  color: var(--vscode-inputValidation-errorForeground);
+  border: 1px solid var(--vscode-inputValidation-errorBorder);
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
 }
 
 .field-error {
-    color: var(--vscode-inputValidation-errorForeground);
-    font-size: 0.9em;
-    margin-top: 3px;
+  color: var(--vscode-inputValidation-errorForeground);
+  font-size: 0.9em;
+  margin-top: 3px;
 }
 
 input.error {
-    border-color: var(--vscode-inputValidation-errorBorder);
+  border-color: var(--vscode-inputValidation-errorBorder);
 }
