@@ -40,7 +40,7 @@ export class AIService {
       // 結果はエディタに直接表示され、SQLのみを返す
       await this.makeStreamingRequest({
         model,
-        max_tokens: 1024,
+        max_tokens: 16384,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
       });
