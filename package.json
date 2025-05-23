@@ -2,7 +2,7 @@
   "name": "sqlwizard-vscode",
   "displayName": "SQL Wizard",
   "description": "AI-powered SQL generator with database management",
-  "version": "0.3.2",
+  "version": "0.3.6",
   "publisher": "n01boy",
   "repository": {
     "type": "git",
@@ -118,7 +118,7 @@
   "scripts": {
     "format": "prettier --write \"src/**/*.{ts,js,json,css}\"",
     "compile": "npm run format && rm -rf out && tsc -p ./ && npm run copy:resource && vsce package",
-    "copy:resource": "mkdir -p out/webview/styles/ out/webview/settings/ out/webview/query/ && cp src/webview/styles/*.css out/webview/styles/ && cp src/webview/settings/settingsScript.js out/webview/settings/ && cp src/webview/query/queryScript.js out/webview/query/",
+    "copy:resource": "mkdir -p out/webview/styles/ out/webview/settings/ out/webview/query/ && cp src/webview/styles/*.css out/webview/styles/ && cp src/webview/settings/*.js out/webview/settings/ && cp src/webview/query/queryScript.js out/webview/query/",
     "watch": "tsc -watch -p ./",
     "package": "vsce package",
     "publish": "npm run compile && vsce publish",
@@ -126,14 +126,17 @@
     "test": "vscode-test"
   },
   "dependencies": {
+    "@google-cloud/vertexai": "^1.8.0",
     "@vscode/webview-ui-toolkit": "^1.4.0",
     "i18next": "^23.10.0",
-    "mysql2": "^3.9.0"
+    "mysql2": "^3.9.0",
+    "ssh2": "^1.16.0"
   },
   "devDependencies": {
     "@types/i18next": "^13.0.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/ssh2": "^1.15.5",
     "@types/vscode": "^1.70.0",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.25.0",

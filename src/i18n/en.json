@@ -32,18 +32,27 @@
       "userRequired": "User is required",
       "databaseRequired": "Database name is required",
       "ssh": {
+        "enabled": "SSH Port Forwarding",
         "title": "SSH Port Forward",
         "host": "SSH Host",
         "port": "SSH Port",
-        "username": "Username",
-        "privateKey": "Private Key",
-        "passphrase": "Passphrase"
+        "username": "SSH Username",
+        "privateKey": "Private Key File",
+        "passphrase": "Passphrase",
+        "browse": "Browse",
+        "clear": "Clear",
+        "passphraseHint": "Optional: Required only if private key is encrypted"
       }
     },
     "ai": {
       "title": "AI Settings",
       "model": "Model",
       "apiKey": "API Key",
+      "apiKeyHint": "For Anthropic models: Anthropic API Key, For Vertex AI models: Google Cloud Service Account Key (JSON)",
+      "vertexProjectId": "Google Cloud Project ID",
+      "vertexProjectIdHint": "Required for Vertex AI models",
+      "vertexLocation": "Vertex AI Location",
+      "vertexLocationHint": "Google Cloud region for Vertex AI",
       "save": "Save Settings"
     }
   },

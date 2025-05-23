@@ -4,7 +4,7 @@ import { I18nService } from '../../services/I18nService';
 import { getSettingsViewHtml } from './SettingsViewTemplate';
 
 export class SettingsViewProvider implements vscode.WebviewViewProvider {
-  private view?: vscode.WebviewView;
+  public webview?: vscode.WebviewView;
 
   constructor(private readonly extensionUri: vscode.Uri) {}
 
@@ -13,7 +13,7 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
     context: vscode.WebviewViewResolveContext,
     token: vscode.CancellationToken
   ) {
-    this.view = webviewView;
+    this.webview = webviewView;
 
     webviewView.webview.options = {
       enableScripts: true,
@@ -49,10 +49,26 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
 
         case 'saveDatabase':
           try {
-            await vscode.commands.executeCommand('sqlwizard.saveDatabase', message.database);
-            webview.postMessage({
-              command: 'databaseSaved',
-            });
+            const result = (await vscode.commands.executeCommand(
+              'sqlwizard.saveDatabase',
+              message.database
+            )) as {
+              success: boolean;
+              message?: string;
+              fieldErrors?: Record<string, string>;
+            };
+
+            if (result.success) {
+              webview.postMessage({
+                command: 'databaseSaved',
+              });
+            } else {
+              webview.postMessage({
+                command: 'showDatabaseError',
+                message: result.message || i18n.t('messages.error.validation'),
+                fieldErrors: result.fieldErrors || {},
+              });
+            }
           } catch (error) {
             let errorMessage = i18n.t('messages.error.validation');
             if (error instanceof Error) {
@@ -97,13 +113,47 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
 
         case 'updateAIConfig':
           try {
-            await vscode.commands.executeCommand('sqlwizard.updateAIConfig', {
+            // VertexAI設定を含むAI設定を更新
+            const aiConfigData: any = {
               model: message.model,
-              apiKey: message.apiKey,
-            });
+              apiKey: message.apiKey || '',
+            };
+
+            // VertexAI設定がある場合は追加
+            if (message.vertexProjectId) {
+              aiConfigData.vertexProjectId = message.vertexProjectId;
+            }
+            if (message.vertexLocation) {
+              aiConfigData.vertexLocation = message.vertexLocation;
+            }
+
+            await vscode.commands.executeCommand('sqlwizard.updateAIConfig', aiConfigData);
             vscode.window.showInformationMessage(i18n.t('messages.success.saved'));
           } catch (error) {
             vscode.window.showErrorMessage(i18n.t('messages.error.validation'));
+          }
+          break;
+
+        case 'browsePrivateKey':
+          try {
+            const result = await vscode.window.showOpenDialog({
+              canSelectFiles: true,
+              canSelectFolders: false,
+              canSelectMany: false,
+              filters: {
+                'All Files': ['*'],
+              },
+              openLabel: i18n.t('settings.database.ssh.browse'),
+            });
+
+            if (result && result[0]) {
+              webview.postMessage({
+                command: 'privateKeySelected',
+                filePath: result[0].fsPath,
+              });
+            }
+          } catch (error) {
+            vscode.window.showErrorMessage(i18n.t('messages.error.unknown'));
           }
           break;
 
@@ -115,8 +165,8 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
   }
 
   updateDatabases() {
-    if (this.view) {
-      this.view.webview.postMessage({
+    if (this.webview) {
+      this.webview.webview.postMessage({
         command: 'updateDatabases',
         databases: StorageService.getInstance().getDatabases(),
       });
@@ -124,8 +174,8 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
   }
 
   updateLanguage(language: string) {
-    if (this.view) {
-      this.view.webview.postMessage({
+    if (this.webview) {
+      this.webview.webview.postMessage({
         command: 'updateLanguage',
         language,
       });
@@ -133,12 +183,14 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
   }
 
   updateAIConfig() {
-    if (this.view) {
+    if (this.webview) {
       const aiConfig = StorageService.getInstance().getAIConfig();
-      this.view.webview.postMessage({
+      this.webview.webview.postMessage({
         command: 'updateAIConfig',
         model: aiConfig.model,
-        apiKey: aiConfig.apiKey,
+        apiKey: aiConfig.apiKey || '',
+        vertexProjectId: aiConfig.vertexProjectId || '',
+        vertexLocation: aiConfig.vertexLocation || 'us-east5',
       });
     }
   }

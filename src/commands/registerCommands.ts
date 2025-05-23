@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { StorageService } from '../services/StorageService';
 import { DatabaseService } from '../services/DatabaseService';
+import { SSHService } from '../services/SSHService';
 import { AIService } from '../services/AIService';
 import { I18nService } from '../services/I18nService';
 import { AIConfig, DatabaseConfig } from '../models/interfaces';
@@ -100,14 +101,21 @@ export function registerCommands(
           }
 
           if (hasError) {
-            throw new ValidationError(i18nService.t('messages.error.validation'), fieldErrors);
+            return {
+              success: false,
+              message: i18nService.t('messages.error.validation'),
+              fieldErrors,
+            };
           }
 
           if (database.id) {
             // 既存のデータベースを更新
             const existingDb = storageService.getDatabases().find((db) => db.id === database.id);
             if (!existingDb) {
-              throw new Error(i18nService.t('messages.error.validation'));
+              return {
+                success: false,
+                message: i18nService.t('messages.error.validation'),
+              };
             }
 
             const updatedDb: DatabaseConfig = {
@@ -127,6 +135,7 @@ export function registerCommands(
               user: database.user!,
               password: database.password || '',
               database: database.database!,
+              sshConfig: (database as any).sshConfig || undefined,
             };
 
             await storageService.addDatabase(newDb);
@@ -135,17 +144,35 @@ export function registerCommands(
           vscode.window.showInformationMessage(i18nService.t('messages.success.saved'));
           settingsViewProvider.updateDatabases();
           queryViewProvider.updateDatabases();
+
+          return { success: true };
         } catch (error) {
-          if (error instanceof ValidationError) {
-            throw error;
-          } else if (error instanceof Error) {
-            throw new Error(error.message);
-          } else {
-            throw new Error(i18nService.t('messages.error.validation'));
-          }
+          console.error('Save database error:', error);
+          const errorMessage =
+            error instanceof Error ? error.message : i18nService.t('messages.error.validation');
+          return {
+            success: false,
+            message: errorMessage,
+          };
         }
       }
     ),
+
+    vscode.commands.registerCommand('sqlwizard.browseEncryptionKey', async () => {
+      const file = await vscode.window.showOpenDialog({
+        canSelectFiles: true,
+        canSelectFolders: false,
+        canSelectMany: false,
+        title: i18nService.t('settings.database.selectEncryptionKeyFile'),
+      });
+
+      if (file && file[0]) {
+        settingsViewProvider.webview?.webview.postMessage({
+          command: 'encryptionKeyFileSelected',
+          path: file[0].fsPath,
+        });
+      }
+    }),
 
     vscode.commands.registerCommand('sqlwizard.deleteDatabase', async (databaseId: string) => {
       const answer = await vscode.window.showWarningMessage(
@@ -163,11 +190,25 @@ export function registerCommands(
 
     vscode.commands.registerCommand(
       'sqlwizard.updateAIConfig',
-      async (config: { model: string; apiKey: string }) => {
+      async (config: {
+        model: string;
+        apiKey: string;
+        vertexProjectId?: string;
+        vertexLocation?: string;
+      }) => {
         const aiConfig: AIConfig = {
           model: config.model as AIConfig['model'],
-          apiKey: config.apiKey,
+          apiKey: config.apiKey || '',
         };
+
+        // VertexAI設定がある場合は追加
+        if (config.vertexProjectId) {
+          aiConfig.vertexProjectId = config.vertexProjectId;
+        }
+        if (config.vertexLocation) {
+          aiConfig.vertexLocation = config.vertexLocation;
+        }
+
         await storageService.updateAIConfig(aiConfig);
         settingsViewProvider.updateAIConfig();
         vscode.window.showInformationMessage(i18nService.t('messages.success.saved'));
@@ -297,10 +338,19 @@ export function registerCommands(
             user: database.user!,
             password: database.password || '',
             database: database.database!,
+            sshConfig: (database as any).sshConfig || undefined,
           };
 
           // データベースサービスを取得
           const dbService = DatabaseService.getInstance();
+
+          // SSH設定がある場合は先にSSH接続をテスト
+          if (tempDbConfig.sshConfig) {
+            console.log('Testing SSH connection first...');
+            const sshService = SSHService.getInstance();
+            await sshService.testSSHConnection(tempDbConfig.sshConfig);
+            console.log('SSH connection test successful');
+          }
 
           // 接続テスト
           await dbService.connect(tempDbConfig);
@@ -311,14 +361,21 @@ export function registerCommands(
           // 成功メッセージを返す
           return { success: true };
         } catch (error) {
+          console.error('Database connection test error:', error);
           if (error instanceof ValidationError) {
             throw error;
           } else if (error instanceof Error) {
+            console.error('Connection test error details:', {
+              message: error.message,
+              stack: error.stack,
+              name: error.name,
+            });
             return {
               success: false,
               error: error.message,
             };
           } else {
+            console.error('Unknown connection test error:', typeof error, error);
             return {
               success: false,
               error: i18nService.t('messages.error.connection'),

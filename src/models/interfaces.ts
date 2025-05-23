@@ -13,12 +13,16 @@ export interface DatabaseConfig {
     username: string;
     privateKey?: string;
     passphrase?: string;
+    localPort?: number; // ローカルポートの指定（省略時は自動割り当て）
+    enabled: boolean; // SSH接続の有効/無効
   };
 }
 
 export interface AIConfig {
-  model: 'claude-3-7-sonnet-latest' | 'claude-3-5-sonnet-latest';
+  model: 'claude-3-7-sonnet-latest' | 'claude-3-5-sonnet-latest' | 'vertex-claude-3-7-sonnet';
   apiKey: string;
+  vertexProjectId?: string;
+  vertexLocation?: string;
 }
 
 export interface Settings {

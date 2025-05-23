@@ -164,3 +164,56 @@
 input.error {
   border-color: var(--vscode-inputValidation-errorBorder);
 }
+
+/* SSH設定 */
+#ssh-config {
+  margin-left: 20px;
+  padding: 15px;
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 4px;
+  background-color: var(--vscode-input-background);
+}
+
+.file-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.file-input-group input[type='text'] {
+  flex: 1;
+}
+
+.vscode-button.secondary {
+  background-color: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+
+.vscode-button.secondary:hover {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.field-hint {
+  display: block;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.85em;
+  margin-top: 3px;
+  font-style: italic;
+}
+
+/* チェックボックスのスタイル */
+input[type='checkbox'] {
+  margin-right: 8px;
+}
+
+.form-row label[for='ssh-enabled'] {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 5px;
+}
+
+.form-row label[for='ssh-enabled'] input[type='checkbox'] {
+  margin-right: 8px;
+  margin-bottom: 0;
+}

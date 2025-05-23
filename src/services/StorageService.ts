@@ -65,7 +65,17 @@ export class StorageService {
   }
 
   getDatabases(): DatabaseConfig[] {
-    return this.settings.databases;
+    // 既存のデータベース設定にデフォルト値を適用
+    return this.settings.databases.map((db) => ({
+      ...db,
+      provider: db.provider || 'mysql',
+      host: db.host || 'localhost',
+      port: db.port || 3306,
+      user: db.user || 'root',
+      password: db.password || '',
+      database: db.database || '',
+      sshConfig: db.sshConfig || undefined,
+    }));
   }
 
   async addDatabase(config: DatabaseConfig): Promise<void> {

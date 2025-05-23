@@ -1,5 +1,67 @@
 # Change Log
 
+## [0.3.6] - 2025-05-23
+
+### Fixed
+
+- Fixed database add/edit functionality not working in extension mode
+- Improved error handling for database save operations with proper field validation
+- Enhanced database configuration with default values for existing settings
+- Added comprehensive debug logging for troubleshooting database operations
+- Fixed event listener initialization timing issues in webview
+
+### 修正
+
+- 拡張機能モードでデータベース追加・編集機能が動作しない問題を修正
+- 適切なフィールド検証によるデータベース保存操作のエラー処理を改善
+- 既存設定のデフォルト値を含むデータベース設定の強化
+- データベース操作のトラブルシューティング用の包括的なデバッグログを追加
+- webviewでのイベントリスナー初期化タイミングの問題を修正
+
+## [0.3.4] - 2025-05-23
+
+### Fixed
+
+- SSH private key file browser now shows all files instead of filtering by extension
+- Improved file selection for SSH keys to support any file format
+
+### 修正
+
+- SSH秘密鍵ファイルブラウザが拡張子でフィルタリングせず、すべてのファイルを表示するように修正
+- 任意のファイル形式をサポートするSSHキーのファイル選択を改善
+
+## [0.3.3] - 2025-05-23
+
+### Added
+
+- Support for Vertex AI (Google Cloud) with project ID and region configuration
+- Separate AI configuration UI for Anthropic (API key) and Vertex AI (project ID)
+- Enhanced SSH port forwarding support with detailed connection testing
+- Connection test error messages displayed above test button for better UX
+- Improved file organization with modular JavaScript files (under 300 lines each)
+
+### Fixed
+
+- SSH configuration now properly included in database connection tests
+- Connection test properly validates SSH settings before database connection
+- Improved error handling and logging for SSH connections
+- Fixed VertexAI configuration not being saved correctly
+
+### 追加
+
+- プロジェクトIDとリージョン設定によるVertex AI（Google Cloud）のサポート
+- Anthropic（APIキー）とVertex AI（プロジェクトID）用の分離されたAI設定UI
+- 詳細な接続テストを含む強化されたSSHポートフォワーディングサポート
+- より良いUXのためにテストボタンの上に表示される接続テストエラーメッセージ
+- モジュラーJavaScriptファイル（各300行以下）による改善されたファイル構成
+
+### 修正
+
+- SSH設定がデータベース接続テストに適切に含まれるように修正
+- 接続テストがデータベース接続前にSSH設定を適切に検証するように修正
+- SSH接続の改善されたエラー処理とログ出力
+- VertexAI設定が正しく保存されない問題を修正
+
 ## [0.3.2] - 2025-04-04
 
 - Update max_tokens to 16384.

@@ -4,173 +4,57 @@ const vscode = acquireVsCodeApi();
 // グローバル変数
 let databases = [];
 let currentDbId = null;
-const settingsPage = document.querySelector('.container');
-const databaseForm = document.getElementById('database-form');
-const errorMessage = document.getElementById('error-message');
 
-// Language settings
-const languageDropdown = document.getElementById('language');
-languageDropdown.addEventListener('change', (e) => {
-  vscode.postMessage({
-    command: 'changeLanguage',
-    language: e.target.value,
-  });
+// 初期化処理
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('DOM loaded, initializing...');
+  initializeEventListeners();
 });
 
-// Database settings
-const databaseList = document.getElementById('database-list');
-const addDatabaseButton = document.getElementById('add-database');
-const backToSettingsButton = document.getElementById('back-to-settings');
-const cancelDbButton = document.getElementById('cancel-db');
-const saveDbButton = document.getElementById('save-db');
-const dbFormTitle = document.getElementById('db-form-title');
-const tabButtons = document.querySelectorAll('.tab-button');
-const tabContents = document.querySelectorAll('.tab-content');
-const dbSearchInput = document.getElementById('db-search');
-const searchResults = document.getElementById('search-results');
-
-// フィールドとエラー表示
-const nameInput = document.getElementById('db-name');
-const hostInput = document.getElementById('db-host');
-const portInput = document.getElementById('db-port');
-const userInput = document.getElementById('db-user');
-const passwordInput = document.getElementById('db-password');
-const databaseInput = document.getElementById('db-database');
-
-const nameError = document.getElementById('name-error');
-const hostError = document.getElementById('host-error');
-const portError = document.getElementById('port-error');
-const userError = document.getElementById('user-error');
-const databaseError = document.getElementById('database-error');
-
-// エラーメッセージをクリア
-function clearErrors() {
-  errorMessage.style.display = 'none';
-  errorMessage.textContent = '';
-  nameError.textContent = '';
-  hostError.textContent = '';
-  portError.textContent = '';
-  userError.textContent = '';
-  databaseError.textContent = '';
+// フォールバック: DOMContentLoadedが既に発生している場合
+if (document.readyState === 'loading') {
+  // まだ読み込み中
+  console.log('Document is still loading, waiting for DOMContentLoaded...');
+} else {
+  // DOMContentLoadedは既に発生済み
+  console.log('Document already loaded, initializing immediately...');
+  initializeEventListeners();
 }
 
-// エラーメッセージを表示
-function showError(message, fieldErrors = {}) {
-  errorMessage.textContent = message;
-  errorMessage.style.display = 'block';
+// イベントリスナーの初期化
+function initializeEventListeners() {
+  console.log('initializeEventListeners called');
 
-  if (fieldErrors.name) {
-    nameError.textContent = fieldErrors.name;
+  // Language settings
+  const languageDropdown = document.getElementById('language');
+  if (languageDropdown) {
+    languageDropdown.addEventListener('change', (e) => {
+      vscode.postMessage({
+        command: 'changeLanguage',
+        language: e.target.value,
+      });
+    });
   }
-  if (fieldErrors.host) {
-    hostError.textContent = fieldErrors.host;
-  }
-  if (fieldErrors.port) {
-    portError.textContent = fieldErrors.port;
-  }
-  if (fieldErrors.user) {
-    userError.textContent = fieldErrors.user;
-  }
-  if (fieldErrors.database) {
-    databaseError.textContent = fieldErrors.database;
-  }
+
+  // AI設定のイベントリスナーを初期化
+  console.log('Calling initializeAIEventListeners...');
+  initializeAIEventListeners();
+
+  // データベース設定のイベントリスナーを初期化
+  console.log('Calling initializeDatabaseEventListeners...');
+  initializeDatabaseEventListeners();
+
+  console.log('initializeEventListeners completed');
 }
-
-// テスト接続ボタンのイベントリスナー
-const testConnectionButton = document.getElementById('test-connection');
-testConnectionButton.addEventListener('click', () => {
-  // フォームのバリデーション
-  if (!validateForm()) {
-    return;
-  }
-
-  const host = hostInput.value;
-  const port = portInput.value;
-  const user = userInput.value;
-  const password = passwordInput.value;
-  const database = databaseInput.value;
-
-  // テスト接続リクエスト
-  vscode.postMessage({
-    command: 'testDatabaseConnection',
-    database: {
-      host,
-      port: parseInt(port),
-      user,
-      password,
-      database,
-    },
-  });
-
-  // ボタンを無効化して「テスト中...」に変更
-  testConnectionButton.disabled = true;
-  testConnectionButton.textContent =
-    document.documentElement.lang === 'ja' ? 'テスト中...' : 'Testing...';
-});
-
-function selectDatabase(db) {
-  currentDbId = db.id;
-  document.getElementById('db-name').value = db.name;
-  document.getElementById('db-provider').value = db.provider;
-  document.getElementById('db-host').value = db.host;
-  document.getElementById('db-port').value = db.port;
-  document.getElementById('db-user').value = db.user;
-  document.getElementById('db-password').value = db.password;
-  document.getElementById('db-database').value = db.database;
-}
-
-function createDatabaseElement(database) {
-  const div = document.createElement('div');
-  div.className = 'database-item';
-  div.innerHTML = `
-        <div class="form-group">
-            <input type="text" value="${database.name}" readonly>
-            <button class="edit-database vscode-button" data-id="${database.id}">
-                ${document.documentElement.lang === 'ja' ? '編集' : 'Edit'}
-            </button>
-            <button class="delete-database vscode-button" data-id="${database.id}">
-                ${document.documentElement.lang === 'ja' ? '削除' : 'Delete'}
-            </button>
-        </div>
-    `;
-  return div;
-}
-
-// データベース追加画面を表示
-addDatabaseButton.addEventListener('click', () => {
-  // フォームをリセット
-  currentDbId = null;
-  dbFormTitle.textContent =
-    document.documentElement.lang === 'ja' ? 'データベースを追加' : 'Add Database';
-  document.getElementById('db-name').value = '';
-  document.getElementById('db-provider').value = 'mysql';
-  document.getElementById('db-host').value = 'localhost';
-  document.getElementById('db-port').value = '3306';
-  document.getElementById('db-user').value = 'root';
-  document.getElementById('db-password').value = '';
-  document.getElementById('db-database').value = '';
-
-  // エラーをクリア
-  clearErrors();
-
-  // 画面切り替え
-  settingsPage.style.display = 'none';
-  databaseForm.style.display = 'block';
-});
-
-// 設定画面に戻る
-backToSettingsButton.addEventListener('click', () => {
-  settingsPage.style.display = 'block';
-  databaseForm.style.display = 'none';
-});
-
-cancelDbButton.addEventListener('click', () => {
-  settingsPage.style.display = 'block';
-  databaseForm.style.display = 'none';
-});
 
 // フォームのバリデーション
 function validateForm() {
+  const nameInput = document.getElementById('db-name');
+  const hostInput = document.getElementById('db-host');
+  const portInput = document.getElementById('db-port');
+  const userInput = document.getElementById('db-user');
+  const databaseInput = document.getElementById('db-database');
+
   let isValid = true;
   const fieldErrors = {};
 
@@ -227,116 +111,251 @@ function validateForm() {
 }
 
 // データベースを保存
-saveDbButton.addEventListener('click', () => {
+function saveDatabase() {
+  console.log('saveDatabase called');
+
+  if (!validateForm()) {
+    console.log('Validation failed');
+    return;
+  }
+
+  const name = document.getElementById('db-name').value;
+  const provider = document.getElementById('db-provider').value;
+  const host = document.getElementById('db-host').value;
+  const port = document.getElementById('db-port').value;
+  const user = document.getElementById('db-user').value;
+  const password = document.getElementById('db-password').value;
+  const database = document.getElementById('db-database').value;
+
+  // SSH設定
+  const sshEnabled = document.getElementById('ssh-enabled').checked;
+  let sshConfig = null;
+
+  if (sshEnabled) {
+    const sshHost = document.getElementById('ssh-host').value;
+    const sshPort = document.getElementById('ssh-port').value;
+    const sshUser = document.getElementById('ssh-user').value;
+    const sshPrivateKey = document.getElementById('ssh-private-key').value;
+    const sshPassphrase = document.getElementById('ssh-passphrase').value;
+
+    sshConfig = {
+      host: sshHost,
+      port: parseInt(sshPort) || 22,
+      username: sshUser,
+      privateKey: sshPrivateKey,
+      passphrase: sshPassphrase || undefined,
+      enabled: true,
+    };
+  }
+
+  const databaseData = {
+    id: currentDbId,
+    name,
+    provider,
+    host,
+    port: parseInt(port),
+    user,
+    password,
+    database,
+    sshConfig,
+  };
+
+  console.log('Sending saveDatabase message:', databaseData);
+
+  vscode.postMessage({
+    command: 'saveDatabase',
+    database: databaseData,
+  });
+}
+
+// 接続テスト
+function testConnection() {
   if (!validateForm()) {
     return;
   }
 
-  const name = nameInput.value;
-  const provider = document.getElementById('db-provider').value;
-  const host = hostInput.value;
-  const port = portInput.value;
-  const user = userInput.value;
-  const password = passwordInput.value;
-  const database = databaseInput.value;
+  // 接続テスト専用のエラーメッセージをクリア
+  clearConnectionError();
+
+  const host = document.getElementById('db-host').value;
+  const port = document.getElementById('db-port').value;
+  const user = document.getElementById('db-user').value;
+  const password = document.getElementById('db-password').value;
+  const database = document.getElementById('db-database').value;
+
+  // SSH設定
+  const sshEnabled = document.getElementById('ssh-enabled').checked;
+  let sshConfig = null;
+
+  if (sshEnabled) {
+    const sshHost = document.getElementById('ssh-host').value;
+    const sshPort = document.getElementById('ssh-port').value;
+    const sshUser = document.getElementById('ssh-user').value;
+    const sshPrivateKey = document.getElementById('ssh-private-key').value;
+    const sshPassphrase = document.getElementById('ssh-passphrase').value;
+
+    sshConfig = {
+      host: sshHost,
+      port: parseInt(sshPort) || 22,
+      username: sshUser,
+      privateKey: sshPrivateKey,
+      passphrase: sshPassphrase || undefined,
+      enabled: true,
+    };
+  }
 
   vscode.postMessage({
-    command: 'saveDatabase',
+    command: 'testDatabaseConnection',
     database: {
-      id: currentDbId,
-      name,
-      provider,
       host,
       port: parseInt(port),
       user,
       password,
       database,
+      sshConfig,
     },
   });
-});
 
-// データベース一覧のイベント
-databaseList.addEventListener('click', (e) => {
-  const target = e.target.closest('.edit-database, .delete-database');
-  if (!target) return;
-
-  if (target.classList.contains('edit-database')) {
-    const databaseId = target.dataset.id;
-    const database = databases.find((db) => db.id === databaseId);
-
-    if (database) {
-      dbFormTitle.textContent =
-        document.documentElement.lang === 'ja' ? 'データベースを編集' : 'Edit Database';
-      selectDatabase(database);
-      settingsPage.style.display = 'none';
-      databaseForm.style.display = 'block';
-    }
-  } else if (target.classList.contains('delete-database')) {
-    vscode.postMessage({
-      command: 'deleteDatabase',
-      databaseId: target.dataset.id,
-    });
+  const testConnectionButton = document.getElementById('test-connection');
+  if (testConnectionButton) {
+    testConnectionButton.disabled = true;
+    testConnectionButton.textContent =
+      document.documentElement.lang === 'ja' ? 'テスト中...' : 'Testing...';
   }
-});
+}
 
-// AI settings
-const aiModelDropdown = document.getElementById('ai-model');
-const apiKeyInput = document.getElementById('api-key');
-const saveAiConfigButton = document.getElementById('save-ai-config');
+// エラーメッセージをクリア
+function clearErrors() {
+  const errorMessage = document.getElementById('error-message');
+  if (errorMessage) {
+    errorMessage.style.display = 'none';
+    errorMessage.textContent = '';
+  }
 
-saveAiConfigButton.addEventListener('click', () => {
-  vscode.postMessage({
-    command: 'updateAIConfig',
-    model: aiModelDropdown.value,
-    apiKey: apiKeyInput.value,
+  const errorFields = ['name-error', 'host-error', 'port-error', 'user-error', 'database-error'];
+  errorFields.forEach((fieldId) => {
+    const element = document.getElementById(fieldId);
+    if (element) {
+      element.textContent = '';
+    }
   });
-});
+}
 
-// Handle messages from extension
+// 接続テスト専用のエラーメッセージをクリア
+function clearConnectionError() {
+  const connectionErrorMessage = document.getElementById('connection-error-message');
+  if (connectionErrorMessage) {
+    connectionErrorMessage.style.display = 'none';
+    connectionErrorMessage.textContent = '';
+  }
+}
+
+// エラーメッセージを表示
+function showError(message, fieldErrors = {}) {
+  const errorMessage = document.getElementById('error-message');
+  if (errorMessage) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+  }
+
+  Object.keys(fieldErrors).forEach((field) => {
+    const errorElement = document.getElementById(field + '-error');
+    if (errorElement) {
+      errorElement.textContent = fieldErrors[field];
+    }
+  });
+}
+
+// 接続テスト専用のエラーメッセージを表示
+function showConnectionError(message) {
+  const connectionErrorMessage = document.getElementById('connection-error-message');
+  if (connectionErrorMessage) {
+    connectionErrorMessage.textContent = message;
+    connectionErrorMessage.style.display = 'block';
+  }
+}
+
+// データベース要素を作成
+function createDatabaseElement(database) {
+  const div = document.createElement('div');
+  div.className = 'database-item';
+  div.innerHTML = `
+    <div class="form-group">
+      <input type="text" value="${database.name}" readonly>
+      <button class="edit-database vscode-button" data-id="${database.id}">
+        ${document.documentElement.lang === 'ja' ? '編集' : 'Edit'}
+      </button>
+      <button class="delete-database vscode-button" data-id="${database.id}">
+        ${document.documentElement.lang === 'ja' ? '削除' : 'Delete'}
+      </button>
+    </div>
+  `;
+  return div;
+}
+
+// メッセージハンドラー
 window.addEventListener('message', (event) => {
   const message = event.data;
+  console.log('Received message:', message);
   switch (message.command) {
     case 'updateDatabases':
       databases = message.databases;
-      databaseList.innerHTML = '';
-      databases.forEach((db) => {
-        databaseList.appendChild(createDatabaseElement(db));
-      });
+      const databaseList = document.getElementById('database-list');
+      if (databaseList) {
+        databaseList.innerHTML = '';
+        databases.forEach((db) => {
+          databaseList.appendChild(createDatabaseElement(db));
+        });
+      }
       break;
+
     case 'updateLanguage':
-      languageDropdown.value = message.language;
+      const languageDropdown = document.getElementById('language');
+      if (languageDropdown) {
+        languageDropdown.value = message.language;
+      }
       break;
+
     case 'updateAIConfig':
-      aiModelDropdown.value = message.model;
-      apiKeyInput.value = message.apiKey;
+      updateAIConfig(message);
       break;
+
     case 'showDatabaseError':
       showError(message.message, message.fieldErrors || {});
       break;
-    case 'databaseSaved':
-      settingsPage.style.display = 'block';
-      databaseForm.style.display = 'none';
-      break;
-    case 'testConnectionResult':
-      // テスト接続ボタンを元に戻す
-      testConnectionButton.disabled = false;
-      testConnectionButton.textContent =
-        document.documentElement.lang === 'ja' ? '接続テスト' : 'Test Connection';
 
-      // 結果に応じてメッセージを表示
+    case 'databaseSaved':
+      console.log('Database saved successfully, returning to settings page');
+      clearErrors();
+      showSettingsPage();
+      break;
+
+    case 'testConnectionResult':
+      const testConnectionButton = document.getElementById('test-connection');
+      if (testConnectionButton) {
+        testConnectionButton.disabled = false;
+        testConnectionButton.textContent =
+          document.documentElement.lang === 'ja' ? '接続テスト' : 'Test Connection';
+      }
+
       if (message.success) {
-        vscode.window.showInformationMessage(
-          document.documentElement.lang === 'ja'
-            ? 'データベースに接続しました'
-            : 'Connected to database successfully'
-        );
+        // 成功時は接続テストエラーメッセージをクリア
+        clearConnectionError();
       } else {
-        showError(
+        // 失敗時は接続テスト専用のエラーメッセージを表示
+        showConnectionError(
           message.error ||
             (document.documentElement.lang === 'ja'
               ? 'データベースへの接続に失敗しました'
               : 'Failed to connect to database')
         );
+      }
+      break;
+
+    case 'privateKeySelected':
+      const sshPrivateKeyInput = document.getElementById('ssh-private-key');
+      if (sshPrivateKeyInput) {
+        sshPrivateKeyInput.value = message.filePath;
       }
       break;
   }

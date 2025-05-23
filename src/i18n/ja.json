@@ -32,18 +32,27 @@
       "userRequired": "ユーザーを入力してください",
       "databaseRequired": "データベース名を入力してください",
       "ssh": {
+        "enabled": "SSHポートフォワーディング",
         "title": "SSHポートフォワード",
         "host": "SSHホスト",
         "port": "SSHポート",
-        "username": "ユーザー名",
-        "privateKey": "秘密鍵",
-        "passphrase": "パスフレーズ"
+        "username": "SSHユーザー名",
+        "privateKey": "秘密鍵ファイル",
+        "passphrase": "パスフレーズ",
+        "browse": "参照",
+        "clear": "クリア",
+        "passphraseHint": "オプション: 秘密鍵が暗号化されている場合のみ必要"
       }
     },
     "ai": {
       "title": "AI設定",
       "model": "モデル",
       "apiKey": "APIキー",
+      "apiKeyHint": "Anthropicモデル: Anthropic APIキー、Vertex AIモデル: Google Cloudサービスアカウントキー（JSON）",
+      "vertexProjectId": "Google CloudプロジェクトID",
+      "vertexProjectIdHint": "Vertex AIモデルに必要",
+      "vertexLocation": "Vertex AIロケーション",
+      "vertexLocationHint": "Vertex AI用のGoogle Cloudリージョン",
       "save": "設定を保存"
     }
   },

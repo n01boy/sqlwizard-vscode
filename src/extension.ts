@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { StorageService } from './services/StorageService';
 import { I18nService } from './services/I18nService';
+import { SSHService } from './services/SSHService';
 import { SettingsViewProvider } from './webview/providers/SettingsViewProvider';
 import { QueryViewProvider } from './webview/providers/QueryViewProvider';
 import { registerCommands } from './commands/registerCommands';
@@ -24,6 +25,12 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(...commands);
 }
 
-export function deactivate() {
+export async function deactivate() {
   // Clean up resources
+  try {
+    const sshService = SSHService.getInstance();
+    await sshService.closeAllTunnels();
+  } catch (error) {
+    console.error('Error closing SSH tunnels during deactivation:', error);
+  }
 }

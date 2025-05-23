@@ -43,13 +43,35 @@ export function getSettingsViewHtml(webview: vscode.Webview, extensionUri: vscod
                     <div class="form-group">
                         <label for="ai-model">${i18n.t('settings.ai.model')}</label>
                         <select id="ai-model">
-                            <option value="claude-3-7-sonnet-latest">claude-3-7-sonnet-latest</option>
-                            <option value="claude-3-5-sonnet-latest">claude-3-5-sonnet-latest</option>
+                            <option value="claude-3-7-sonnet-latest">Claude 3.7 Sonnet (Anthropic)</option>
+                            <option value="claude-3-5-sonnet-latest">Claude 3.5 Sonnet (Anthropic)</option>
+                            <option value="vertex-claude-3-7-sonnet">Gemini Pro (Vertex AI)</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="api-key">${i18n.t('settings.ai.apiKey')}</label>
-                        <input type="password" id="api-key">
+                    <div id="anthropic-config">
+                        <div class="form-group">
+                            <label for="api-key">${i18n.t('settings.ai.apiKey')}</label>
+                            <input type="password" id="api-key">
+                            <small class="field-hint" id="api-key-hint">${i18n.t('settings.ai.apiKeyHint')}</small>
+                        </div>
+                    </div>
+                    <div id="vertex-config" style="display: none;">
+                        <div class="form-group">
+                            <label for="vertex-project-id">${i18n.t('settings.ai.vertexProjectId')}</label>
+                            <input type="text" id="vertex-project-id">
+                            <small class="field-hint">${i18n.t('settings.ai.vertexProjectIdHint')}</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="vertex-location">${i18n.t('settings.ai.vertexLocation')}</label>
+                            <select id="vertex-location">
+                                <option value="us-east5" selected>us-east5</option>
+                                <option value="us-central1">us-central1</option>
+                                <option value="us-east1">us-east1</option>
+                                <option value="europe-west1">europe-west1</option>
+                                <option value="asia-northeast1">asia-northeast1</option>
+                            </select>
+                            <small class="field-hint">${i18n.t('settings.ai.vertexLocationHint')}</small>
+                        </div>
                     </div>
                     <div class="form-group">
                         <button id="save-ai-config" class="vscode-button">
@@ -114,9 +136,47 @@ export function getSettingsViewHtml(webview: vscode.Webview, extensionUri: vscod
                                 <input type="text" id="db-database" required>
                                 <div class="field-error" id="database-error"></div>
                             </div>
+                            <div class="form-row">
+                                <label for="ssh-enabled">
+                                    <input type="checkbox" id="ssh-enabled">
+                                    ${i18n.t('settings.database.ssh.enabled')}
+                                </label>
+                            </div>
+                            <div id="ssh-config" style="display: none;">
+                                <div class="form-row">
+                                    <label for="ssh-host">${i18n.t('settings.database.ssh.host')}</label>
+                                    <input type="text" id="ssh-host" required>
+                                    <div class="field-error" id="ssh-host-error"></div>
+                                </div>
+                                <div class="form-row">
+                                    <label for="ssh-port">${i18n.t('settings.database.ssh.port')}</label>
+                                    <input type="number" id="ssh-port" value="22" required>
+                                    <div class="field-error" id="ssh-port-error"></div>
+                                </div>
+                                <div class="form-row">
+                                    <label for="ssh-user">${i18n.t('settings.database.ssh.username')}</label>
+                                    <input type="text" id="ssh-user" required>
+                                    <div class="field-error" id="ssh-user-error"></div>
+                                </div>
+                                <div class="form-row">
+                                    <label for="ssh-private-key">${i18n.t('settings.database.ssh.privateKey')}</label>
+                                    <div class="file-input-group">
+                                        <input type="text" id="ssh-private-key" readonly>
+                                        <button id="browse-private-key" class="vscode-button" type="button">${i18n.t('settings.database.ssh.browse')}</button>
+                                        <button id="clear-private-key" class="vscode-button secondary" type="button">${i18n.t('settings.database.ssh.clear')}</button>
+                                    </div>
+                                    <div class="field-error" id="ssh-private-key-error"></div>
+                                </div>
+                                <div class="form-row">
+                                    <label for="ssh-passphrase">${i18n.t('settings.database.ssh.passphrase')}</label>
+                                    <input type="password" id="ssh-passphrase">
+                                    <small class="field-hint">${i18n.t('settings.database.ssh.passphraseHint')}</small>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="form-actions">
+                            <div class="error-message" id="connection-error-message" style="display: none;"></div>
                             <button id="test-connection" class="vscode-button">${i18n.t('settings.database.testConnection')}</button>
                             <div class="right-buttons">
                                 <button id="cancel-db" class="vscode-button">${i18n.t('settings.database.cancel')}</button>
@@ -126,6 +186,8 @@ export function getSettingsViewHtml(webview: vscode.Webview, extensionUri: vscod
                     </div>
             </div>
 
+            <script src="${getUri(webview, extensionUri, [isDev ? 'src' : 'out', 'webview', 'settings', 'aiConfigHandler.js'])}"></script>
+            <script src="${getUri(webview, extensionUri, [isDev ? 'src' : 'out', 'webview', 'settings', 'databaseHandler.js'])}"></script>
             <script src="${getUri(webview, extensionUri, [isDev ? 'src' : 'out', 'webview', 'settings', 'settingsScript.js'])}"></script>
         </body>
         </html>

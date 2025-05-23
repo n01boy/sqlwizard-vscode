@@ -1,5 +1,6 @@
 import * as mysql from 'mysql2/promise';
 import { DatabaseConfig, DatabaseSchema, TableEntity } from '../models/interfaces';
+import { SSHService } from './SSHService';
 
 export class DatabaseService {
   private static instance: DatabaseService;
@@ -20,9 +21,20 @@ export class DatabaseService {
 
   async connect(config: DatabaseConfig): Promise<void> {
     try {
+      let host = config.host;
+      let port = config.port;
+
+      // SSHポートフォワーディングが設定されており、有効な場合
+      if (config.sshConfig && config.sshConfig.enabled) {
+        const sshService = SSHService.getInstance();
+        const localPort = await sshService.createTunnel(config);
+        host = '127.0.0.1';
+        port = localPort;
+      }
+
       const connection = await mysql.createConnection({
-        host: config.host,
-        port: config.port,
+        host,
+        port,
         user: config.user,
         password: config.password,
         database: config.database,
@@ -30,10 +42,39 @@ export class DatabaseService {
 
       this.connections.set(config.id, connection);
     } catch (error: unknown) {
+      console.error('Database connection error:', error);
       if (error instanceof Error) {
-        throw new Error(`Failed to connect to database: ${error.message}`);
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+        });
+
+        // エラーメッセージをより分かりやすく変換
+        let userFriendlyMessage = error.message;
+        if (error.message.includes('ETIMEDOUT')) {
+          userFriendlyMessage =
+            'データベースサーバーへの接続がタイムアウトしました。ホスト名、ポート番号、ネットワーク接続を確認してください。';
+        } else if (error.message.includes('ECONNREFUSED')) {
+          userFriendlyMessage =
+            'データベースサーバーへの接続が拒否されました。サーバーが起動しているか、ポート番号が正しいか確認してください。';
+        } else if (error.message.includes('ENOTFOUND')) {
+          userFriendlyMessage =
+            'データベースサーバーが見つかりません。ホスト名を確認してください。';
+        } else if (error.message.includes('Access denied')) {
+          userFriendlyMessage =
+            'データベースへのアクセスが拒否されました。ユーザー名、パスワード、データベース名を確認してください。';
+        } else if (error.message.includes('Unknown database')) {
+          userFriendlyMessage =
+            '指定されたデータベースが存在しません。データベース名を確認してください。';
+        } else if (error.message.includes('SSH接続が無効になっています')) {
+          userFriendlyMessage = 'SSH接続が無効になっています。SSH設定を確認してください。';
+        }
+
+        throw new Error(userFriendlyMessage);
       }
-      throw new Error('Failed to connect to database: Unknown error');
+      console.error('Unknown error type:', typeof error, error);
+      throw new Error('データベース接続に失敗しました: 不明なエラー');
     }
   }
 
@@ -43,7 +84,19 @@ export class DatabaseService {
       await connection.end();
       this.connections.delete(databaseId);
       this.schemas.delete(databaseId);
+
+      // SSHトンネルも閉じる
+      const sshService = SSHService.getInstance();
+      await sshService.closeTunnel(databaseId);
     }
+  }
+
+  /**
+   * SSH接続の状態を取得
+   */
+  getSSHStatus(databaseId: string): { connected: boolean; localPort?: number } {
+    const sshService = SSHService.getInstance();
+    return sshService.getTunnelStatus(databaseId);
   }
 
   async fetchSchema(databaseId: string): Promise<DatabaseSchema> {
