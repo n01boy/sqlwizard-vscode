@@ -8,6 +8,7 @@ import { StorageService } from './StorageService';
 import { I18nService } from './I18nService';
 import { AnthropicService } from './AnthropicService';
 import { VertexAIService } from './VertexAIService';
+import { isClaudeModel, getApiModelId, getMaxTokens } from './AnthropicModels';
 
 export class AIService {
   private static instance: AIService;
@@ -47,8 +48,8 @@ export class AIService {
           projectId: aiConfig.vertexProjectId!,
           location: aiConfig.vertexLocation!,
         });
-      } else if (model === 'claude-4-0-latest') {
-        // Claude 4.0でリクエスト
+      } else if (isClaudeModel(model)) {
+        // Claude系モデルでリクエスト（共通化されたロジック）
         if (!this.anthropicService) {
           this.anthropicService = new AnthropicService(aiConfig.apiKey);
         }
@@ -56,27 +57,18 @@ export class AIService {
         const systemPrompt = this.anthropicService.createSystemPrompt(request.schema);
         const userPrompt = this.anthropicService.createUserPrompt(request);
 
+        // 共通化されたモデル定義を使用
+        const apiModelId = getApiModelId(model);
+        const maxTokens = getMaxTokens(model);
+
         await this.anthropicService.makeStreamingRequest({
-          model: 'claude-3-5-sonnet-20241022', // Claude 4.0の実際のモデル名
-          max_tokens: 16384,
+          model: apiModelId,
+          max_tokens: maxTokens,
           system: systemPrompt,
           messages: [{ role: 'user', content: userPrompt }],
         });
       } else {
-        // その他のモデル（後方互換性）
-        if (!this.anthropicService) {
-          this.anthropicService = new AnthropicService(aiConfig.apiKey);
-        }
-
-        const systemPrompt = this.anthropicService.createSystemPrompt(request.schema);
-        const userPrompt = this.anthropicService.createUserPrompt(request);
-
-        await this.anthropicService.makeStreamingRequest({
-          model,
-          max_tokens: 16384,
-          system: systemPrompt,
-          messages: [{ role: 'user', content: userPrompt }],
-        });
+        throw new Error(`サポートされていないモデルです: ${model}`);
       }
 
       // リクエスト終了時間を記録
@@ -143,14 +135,16 @@ export class AIService {
           projectId: aiConfig.vertexProjectId,
           location: aiConfig.vertexLocation,
         });
-      } else {
-        // Anthropic接続テスト
+      } else if (isClaudeModel(model)) {
+        // Claude系モデル接続テスト（共通化されたロジック）
         if (!aiConfig.apiKey) {
           throw new Error('APIキーが設定されていません。');
         }
 
         const testService = new AnthropicService(aiConfig.apiKey);
-        await testService.testConnection();
+        await testService.testConnection(model);
+      } else {
+        throw new Error(`サポートされていないモデルです: ${model}`);
       }
     } catch (error) {
       if (error instanceof Error) {

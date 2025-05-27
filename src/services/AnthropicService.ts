@@ -2,6 +2,7 @@ import * as https from 'https';
 import * as vscode from 'vscode';
 import { DatabaseSchema, QueryGenerationRequest } from '../models/interfaces';
 import { I18nService } from './I18nService';
+import { getApiModelId, getMaxTokens } from './AnthropicModels';
 
 export class AnthropicService {
   private apiKey: string;
@@ -238,14 +239,18 @@ export class AnthropicService {
     return `Generate a MySQL query for the following request:\n${request.prompt}`;
   }
 
-  async testConnection(): Promise<void> {
+  async testConnection(modelName?: string): Promise<void> {
     try {
       console.log('Testing Anthropic API connection...');
 
+      // モデル名が指定されていない場合はデフォルトを使用
+      const apiModelId = modelName ? getApiModelId(modelName) : 'claude-3-5-sonnet-20241022';
+      const maxTokens = modelName ? getMaxTokens(modelName) : 50;
+
       // 簡単なテストリクエストを送信
       const testData = {
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 50,
+        model: apiModelId,
+        max_tokens: maxTokens,
         messages: [
           {
             role: 'user',

@@ -43,7 +43,9 @@ export function getSettingsViewHtml(webview: vscode.Webview, extensionUri: vscod
                     <div class="form-group">
                         <label for="ai-model">${i18n.t('settings.ai.model')}</label>
                         <select id="ai-model">
-                            <option value="claude-4-0-latest">Claude 4.0 (Anthropic)</option>
+                            <option value="claude-sonnet-4-20250514">Claude Sonnet 4 (2025-05-14)</option>
+                            <option value="claude-3-7-sonnet-20250219">Claude 3.7 Sonnet (2025-02-19)</option>
+                            <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (2024-10-22)</option>
                             <option value="vertex-gemini-2-0-flash">Gemini 2.0 Flash (Vertex AI)</option>
                         </select>
                     </div>

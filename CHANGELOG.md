@@ -1,5 +1,49 @@
 # Change Log
 
+## [0.3.9] - 2025-05-27
+
+### Changed
+
+- Minor improvements and bug fixes
+- Enhanced stability and performance
+
+### 変更
+
+- 軽微な改善とバグ修正
+- 安定性とパフォーマンスの向上
+
+## [0.3.8] - 2025-05-27
+
+### Added
+
+- Support for new Claude models: Claude Sonnet 4 (2025-05-14), Claude 3.7 Sonnet (2025-02-19), Claude 3.5 Sonnet (2024-10-22)
+- Centralized Anthropic model management with AnthropicModels.ts for better maintainability
+
+### Changed
+
+- Refactored Anthropic service code to use shared model definitions and reduce code duplication
+- Improved model selection UI with clear model names and dates
+- Enhanced AI service architecture with better separation of concerns
+
+### Removed
+
+- Deprecated claude-4-0-latest model option (replaced with specific versioned models)
+
+### 追加
+
+- 新しいClaudeモデルのサポート: Claude Sonnet 4 (2025-05-14)、Claude 3.7 Sonnet (2025-02-19)、Claude 3.5 Sonnet (2024-10-22)
+- 保守性向上のためのAnthropicModels.tsによる一元化されたAnthropicモデル管理
+
+### 変更
+
+- 共有モデル定義を使用し、コードの重複を削減するためのAnthropicサービスコードのリファクタリング
+- 明確なモデル名と日付を含むモデル選択UIの改善
+- 関心の分離を改善したAIサービスアーキテクチャの強化
+
+### 削除
+
+- 非推奨のclaude-4-0-latestモデルオプション（特定のバージョン付きモデルに置き換え）
+
 ## [0.3.7] - 2025-05-27
 
 ### Added
