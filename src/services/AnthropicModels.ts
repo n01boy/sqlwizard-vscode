@@ -48,7 +48,11 @@ export function getMaxTokens(modelName: string): number {
  * Claudeモデルかどうかを判定
  */
 export function isClaudeModel(modelName: string): boolean {
-  return modelName.startsWith('claude-') || CLAUDE_MODELS.hasOwnProperty(modelName);
+  return (
+    modelName.startsWith('claude-') ||
+    modelName.startsWith('vertex-claude-') ||
+    CLAUDE_MODELS.hasOwnProperty(modelName)
+  );
 }
 
 /**

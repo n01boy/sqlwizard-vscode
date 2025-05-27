@@ -6,6 +6,9 @@ import { I18nService } from './I18nService';
 const { VertexAI } = require('@google-cloud/vertexai');
 
 export class VertexAIService {
+  // Claude Sonnetモデル用のリージョン定数
+  private static readonly CLAUDE_REGION = 'us-east5';
+
   private getModelName(): string {
     const { StorageService } = require('./StorageService');
     const aiConfig = StorageService.getInstance().getAIConfig();
@@ -13,11 +16,27 @@ export class VertexAIService {
 
     // モデル名をVertex AI用に変換
     if (model === 'vertex-gemini-2-0-flash') {
-      return 'gemini-2.0-flash-exp';
+      return 'gemini-2.0-flash';
+    } else if (model === 'vertex-claude-sonnet-4') {
+      return 'claude-sonnet-4@20250514';
+    } else if (model === 'vertex-claude-3-7-sonnet') {
+      return 'claude-3-7-sonnet@20250219';
     }
 
     // デフォルトはGemini 2.0 Flash
-    return 'gemini-2.0-flash-exp';
+    return 'gemini-2.0-flash';
+  }
+
+  private getLocation(modelName: string): string {
+    // Claude Sonnetモデルの場合はus-east5を使用
+    if (modelName.includes('claude')) {
+      return VertexAIService.CLAUDE_REGION;
+    }
+
+    // その他のモデルは設定されたlocationを使用
+    const { StorageService } = require('./StorageService');
+    const aiConfig = StorageService.getInstance().getAIConfig();
+    return aiConfig.location || 'us-central1';
   }
 
   async makeVertexAIRequest(params: {
@@ -27,20 +46,26 @@ export class VertexAIService {
     location: string;
   }): Promise<string> {
     try {
+      // モデル名を動的に決定
+      const modelName = this.getModelName();
+      // モデルに応じたリージョンを決定
+      const location = this.getLocation(modelName);
+
       console.log(
-        `Making VertexAI request to project: ${params.projectId}, location: ${params.location}`
+        `Making VertexAI request to project: ${params.projectId}, location: ${location}, model: ${modelName}`
       );
 
       // VertexAI クライアントの初期化
       const vertexAI = new VertexAI({
         project: params.projectId,
-        location: params.location,
+        location: location,
       });
-
-      // モデル名を動的に決定
-      const modelName = this.getModelName();
       const model = vertexAI.getGenerativeModel({
         model: modelName,
+        generationConfig: {
+          maxOutputTokens: 8192,
+          temperature: 0.1,
+        },
       });
 
       // リクエストの作成
@@ -181,20 +206,26 @@ export class VertexAIService {
 
   async testConnection(params: { projectId: string; location: string }): Promise<void> {
     try {
+      // モデル名を動的に決定
+      const modelName = this.getModelName();
+      // モデルに応じたリージョンを決定
+      const location = this.getLocation(modelName);
+
       console.log(
-        `Testing VertexAI connection to project: ${params.projectId}, location: ${params.location}`
+        `Testing VertexAI connection to project: ${params.projectId}, location: ${location}, model: ${modelName}`
       );
 
       // VertexAI クライアントの初期化
       const vertexAI = new VertexAI({
         project: params.projectId,
-        location: params.location,
+        location: location,
       });
-
-      // モデル名を動的に決定
-      const modelName = this.getModelName();
       const model = vertexAI.getGenerativeModel({
         model: modelName,
+        generationConfig: {
+          maxOutputTokens: 8192,
+          temperature: 0.1,
+        },
       });
 
       // 簡単なテストリクエストを送信

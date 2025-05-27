@@ -1,5 +1,31 @@
 # Change Log
 
+## [0.4.0] - 2025-05-27
+
+### Added
+
+- Support for Vertex AI Claude models: Claude Sonnet 4 (Vertex AI) and Claude 3.7 Sonnet (Vertex AI)
+- Added us-east5 region option for Vertex AI configuration alongside us-central1
+- Enhanced model selection with clear distinction between Anthropic and Vertex AI models
+
+### Changed
+
+- Updated Gemini 2.0 Flash model name from 'gemini-2.0-flash-exp' to 'gemini-2.0-flash'
+- Improved internal model naming convention with 'vertex-' prefix for Vertex AI models
+- Enhanced model detection logic to properly handle Vertex AI Claude models
+
+### 追加
+
+- Vertex AI Claudeモデルのサポート: Claude Sonnet 4 (Vertex AI)とClaude 3.7 Sonnet (Vertex AI)
+- us-central1と併せてVertex AI設定用のus-east5リージョンオプションを追加
+- AnthropicとVertex AIモデルの明確な区別を含むモデル選択の強化
+
+### 変更
+
+- Gemini 2.0 Flashモデル名を'gemini-2.0-flash-exp'から'gemini-2.0-flash'に更新
+- Vertex AIモデル用の'vertex-'プレフィックスによる内部モデル命名規則の改善
+- Vertex AI Claudeモデルを適切に処理するモデル検出ロジックの強化
+
 ## [0.3.9] - 2025-05-27
 
 ### Changed
