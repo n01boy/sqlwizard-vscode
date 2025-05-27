@@ -1,5 +1,51 @@
 # Change Log
 
+## [0.4.1] - 2025-05-27
+
+### Added
+
+- Support for Gemini 2.5 Pro (Vertex AI) model
+- Support for Gemini 2.5 Flash (Vertex AI) model
+- Enhanced Vertex AI integration with @anthropic-ai/vertex-sdk for Claude models
+- AI test button disable/enable functionality based on configuration changes
+
+### Changed
+
+- Vertex AI location settings now automatically configured based on model type:
+  - Gemini models use us-central1 region
+  - Claude models use us-east5 region
+- Removed manual location input from settings UI for simplified configuration
+- Improved AI configuration validation and error handling
+- Enhanced button state management for better user experience
+
+### Fixed
+
+- Fixed AI test and save buttons not working after configuration changes
+- Resolved location configuration errors for Vertex AI models
+- Improved JavaScript module loading and event listener initialization
+
+### 追加
+
+- Gemini 2.5 Pro (Vertex AI)モデルのサポート
+- Gemini 2.5 Flash (Vertex AI)モデルのサポート
+- ClaudeモデルのためのAnthropicVertex SDKによる強化されたVertex AI統合
+- 設定変更に基づくAIテストボタンの無効化・有効化機能
+
+### 変更
+
+- Vertex AIロケーション設定がモデルタイプに基づいて自動設定されるように変更:
+  - Geminiモデルはus-central1リージョンを使用
+  - Claudeモデルはus-east5リージョンを使用
+- 設定簡素化のため設定UIから手動ロケーション入力を削除
+- AI設定の検証とエラー処理を改善
+- より良いユーザーエクスペリエンスのためのボタン状態管理の強化
+
+### 修正
+
+- 設定変更後にAIテストと保存ボタンが動作しない問題を修正
+- Vertex AIモデルのロケーション設定エラーを解決
+- JavaScriptモジュールの読み込みとイベントリスナー初期化を改善
+
 ## [0.4.0] - 2025-05-27
 
 ### Added
