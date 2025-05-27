@@ -6,6 +6,20 @@ import { I18nService } from './I18nService';
 const { VertexAI } = require('@google-cloud/vertexai');
 
 export class VertexAIService {
+  private getModelName(): string {
+    const { StorageService } = require('./StorageService');
+    const aiConfig = StorageService.getInstance().getAIConfig();
+    const model = aiConfig.model;
+
+    // モデル名をVertex AI用に変換
+    if (model === 'vertex-gemini-2-0-flash') {
+      return 'gemini-2.0-flash-exp';
+    }
+
+    // デフォルトはGemini 2.0 Flash
+    return 'gemini-2.0-flash-exp';
+  }
+
   async makeVertexAIRequest(params: {
     systemPrompt: string;
     userPrompt: string;
@@ -23,9 +37,10 @@ export class VertexAIService {
         location: params.location,
       });
 
-      // Gemini Pro モデルを取得
+      // モデル名を動的に決定
+      const modelName = this.getModelName();
       const model = vertexAI.getGenerativeModel({
-        model: 'gemini-1.5-flash-001',
+        model: modelName,
       });
 
       // リクエストの作成
@@ -162,5 +177,54 @@ export class VertexAIService {
 
   createUserPrompt(request: QueryGenerationRequest): string {
     return `Generate a MySQL query for the following request:\n${request.prompt}`;
+  }
+
+  async testConnection(params: { projectId: string; location: string }): Promise<void> {
+    try {
+      console.log(
+        `Testing VertexAI connection to project: ${params.projectId}, location: ${params.location}`
+      );
+
+      // VertexAI クライアントの初期化
+      const vertexAI = new VertexAI({
+        project: params.projectId,
+        location: params.location,
+      });
+
+      // モデル名を動的に決定
+      const modelName = this.getModelName();
+      const model = vertexAI.getGenerativeModel({
+        model: modelName,
+      });
+
+      // 簡単なテストリクエストを送信
+      const testRequest = {
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text: 'Hello, this is a connection test. Please respond with "Connection successful".',
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = await model.generateContent(testRequest);
+      const response = result.response;
+
+      if (!response) {
+        throw new Error('VertexAIからの応答がありません。');
+      }
+
+      console.log('VertexAI connection test successful');
+    } catch (error: unknown) {
+      console.error('VertexAI connection test error:', error);
+      if (error instanceof Error) {
+        throw new Error(`VertexAI接続テストに失敗しました: ${error.message}`);
+      }
+      throw new Error('VertexAI接続テストに失敗しました: 不明なエラー');
+    }
   }
 }

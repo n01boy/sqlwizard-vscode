@@ -19,7 +19,7 @@ export interface DatabaseConfig {
 }
 
 export interface AIConfig {
-  model: 'claude-3-7-sonnet-latest' | 'claude-3-5-sonnet-latest' | 'vertex-claude-3-7-sonnet';
+  model: 'claude-4-0-latest' | 'vertex-gemini-2-0-flash';
   apiKey: string;
   vertexProjectId?: string;
   vertexLocation?: string;

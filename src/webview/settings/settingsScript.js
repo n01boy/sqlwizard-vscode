@@ -275,6 +275,22 @@ function showConnectionError(message) {
   }
 }
 
+// 接続テスト成功メッセージを表示
+function showConnectionSuccess(message) {
+  const connectionErrorMessage = document.getElementById('connection-error-message');
+  if (connectionErrorMessage) {
+    connectionErrorMessage.textContent = message;
+    connectionErrorMessage.style.display = 'block';
+    connectionErrorMessage.style.color = '#4CAF50'; // 成功時は緑色
+
+    // 3秒後に自動的に非表示にする
+    setTimeout(() => {
+      connectionErrorMessage.style.display = 'none';
+      connectionErrorMessage.style.color = ''; // 色をリセット
+    }, 3000);
+  }
+}
+
 // データベース要素を作成
 function createDatabaseElement(database) {
   const div = document.createElement('div');
@@ -339,8 +355,12 @@ window.addEventListener('message', (event) => {
       }
 
       if (message.success) {
-        // 成功時は接続テストエラーメッセージをクリア
-        clearConnectionError();
+        // 成功時は成功メッセージを表示
+        showConnectionSuccess(
+          document.documentElement.lang === 'ja'
+            ? 'データベースに接続しました'
+            : 'Database connected successfully'
+        );
       } else {
         // 失敗時は接続テスト専用のエラーメッセージを表示
         showConnectionError(
@@ -356,6 +376,29 @@ window.addEventListener('message', (event) => {
       const sshPrivateKeyInput = document.getElementById('ssh-private-key');
       if (sshPrivateKeyInput) {
         sshPrivateKeyInput.value = message.filePath;
+      }
+      break;
+
+    case 'testAIConfigResult':
+      console.log('Received testAIConfigResult:', message);
+      const testAiButton = document.getElementById('test-ai-config');
+      if (testAiButton) {
+        testAiButton.disabled = false;
+        testAiButton.textContent =
+          document.documentElement.lang === 'ja' ? 'AIをテスト' : 'Test AI';
+        console.log('Test button re-enabled');
+      } else {
+        console.error('Test AI button not found when processing result');
+      }
+
+      if (message.success) {
+        // 成功時は成功メッセージを表示
+        console.log('AI test successful');
+        // VSCodeの通知はSettingsViewProviderで表示されるため、ここではログのみ
+      } else {
+        // 失敗時はエラーメッセージを表示
+        console.log('AI test failed:', message.error);
+        // VSCodeの通知はSettingsViewProviderで表示されるため、ここではログのみ
       }
       break;
   }

@@ -43,9 +43,8 @@ export function getSettingsViewHtml(webview: vscode.Webview, extensionUri: vscod
                     <div class="form-group">
                         <label for="ai-model">${i18n.t('settings.ai.model')}</label>
                         <select id="ai-model">
-                            <option value="claude-3-7-sonnet-latest">Claude 3.7 Sonnet (Anthropic)</option>
-                            <option value="claude-3-5-sonnet-latest">Claude 3.5 Sonnet (Anthropic)</option>
-                            <option value="vertex-claude-3-7-sonnet">Gemini Pro (Vertex AI)</option>
+                            <option value="claude-4-0-latest">Claude 4.0 (Anthropic)</option>
+                            <option value="vertex-gemini-2-0-flash">Gemini 2.0 Flash (Vertex AI)</option>
                         </select>
                     </div>
                     <div id="anthropic-config">
@@ -64,11 +63,7 @@ export function getSettingsViewHtml(webview: vscode.Webview, extensionUri: vscod
                         <div class="form-group">
                             <label for="vertex-location">${i18n.t('settings.ai.vertexLocation')}</label>
                             <select id="vertex-location">
-                                <option value="us-east5" selected>us-east5</option>
-                                <option value="us-central1">us-central1</option>
-                                <option value="us-east1">us-east1</option>
-                                <option value="europe-west1">europe-west1</option>
-                                <option value="asia-northeast1">asia-northeast1</option>
+                                <option value="us-central1" selected>us-central1</option>
                             </select>
                             <small class="field-hint">${i18n.t('settings.ai.vertexLocationHint')}</small>
                         </div>
@@ -76,6 +71,9 @@ export function getSettingsViewHtml(webview: vscode.Webview, extensionUri: vscod
                     <div class="form-group">
                         <button id="save-ai-config" class="vscode-button">
                             ${i18n.t('settings.ai.save')}
+                        </button>
+                        <button id="test-ai-config" class="vscode-button">
+                            ${i18n.t('settings.ai.test')}
                         </button>
                     </div>
                 </div>

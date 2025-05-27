@@ -134,6 +134,70 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
           }
           break;
 
+        case 'testAIConfig':
+          console.log('Received testAIConfig message:', message);
+          try {
+            const aiConfigData: any = {
+              model: message.model,
+              apiKey: message.apiKey || '',
+            };
+
+            // VertexAI設定がある場合は追加
+            if (message.vertexProjectId) {
+              aiConfigData.vertexProjectId = message.vertexProjectId;
+            }
+            if (message.vertexLocation) {
+              aiConfigData.vertexLocation = message.vertexLocation;
+            }
+
+            console.log('Executing testAIConfig command with data:', aiConfigData);
+
+            const result = (await vscode.commands.executeCommand(
+              'sqlwizard.testAIConfig',
+              aiConfigData
+            )) as { success: boolean; error?: string };
+
+            console.log('testAIConfig command result:', result);
+
+            // VSCodeの通知でも結果を表示
+            if (result.success) {
+              vscode.window.showInformationMessage(
+                i18n.getCurrentLanguage() === 'ja'
+                  ? 'AI接続テストが成功しました'
+                  : 'AI connection test successful'
+              );
+            } else {
+              vscode.window.showErrorMessage(
+                result.error ||
+                  (i18n.getCurrentLanguage() === 'ja'
+                    ? 'AI接続テストに失敗しました'
+                    : 'AI connection test failed')
+              );
+            }
+
+            webview.postMessage({
+              command: 'testAIConfigResult',
+              success: result.success,
+              error: result.error,
+            });
+          } catch (error) {
+            console.error('testAIConfig error:', error);
+            let errorMessage = i18n.t('messages.error.apiConnection');
+            if (error instanceof Error) {
+              errorMessage = error.message;
+            }
+
+            // エラー時もVSCodeの通知を表示
+            vscode.window.showErrorMessage(errorMessage);
+
+            webview.postMessage({
+              command: 'testAIConfigResult',
+              success: false,
+              error: errorMessage,
+            });
+          }
+          break;
+
         case 'browsePrivateKey':
           try {
             const result = await vscode.window.showOpenDialog({
@@ -190,7 +254,7 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
         model: aiConfig.model,
         apiKey: aiConfig.apiKey || '',
         vertexProjectId: aiConfig.vertexProjectId || '',
-        vertexLocation: aiConfig.vertexLocation || 'us-east5',
+        vertexLocation: aiConfig.vertexLocation || 'us-central1',
       });
     }
   }

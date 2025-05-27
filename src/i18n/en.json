@@ -48,12 +48,13 @@
       "title": "AI Settings",
       "model": "Model",
       "apiKey": "API Key",
-      "apiKeyHint": "For Anthropic models: Anthropic API Key, For Vertex AI models: Google Cloud Service Account Key (JSON)",
+      "apiKeyHint": "Anthropic API Key",
       "vertexProjectId": "Google Cloud Project ID",
       "vertexProjectIdHint": "Required for Vertex AI models",
       "vertexLocation": "Vertex AI Location",
       "vertexLocationHint": "Google Cloud region for Vertex AI",
-      "save": "Save Settings"
+      "save": "Save Settings",
+      "test": "Test AI"
     }
   },
   "query": {

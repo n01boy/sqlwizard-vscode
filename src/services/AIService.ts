@@ -47,8 +47,23 @@ export class AIService {
           projectId: aiConfig.vertexProjectId!,
           location: aiConfig.vertexLocation!,
         });
+      } else if (model === 'claude-4-0-latest') {
+        // Claude 4.0でリクエスト
+        if (!this.anthropicService) {
+          this.anthropicService = new AnthropicService(aiConfig.apiKey);
+        }
+
+        const systemPrompt = this.anthropicService.createSystemPrompt(request.schema);
+        const userPrompt = this.anthropicService.createUserPrompt(request);
+
+        await this.anthropicService.makeStreamingRequest({
+          model: 'claude-3-5-sonnet-20241022', // Claude 4.0の実際のモデル名
+          max_tokens: 16384,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }],
+        });
       } else {
-        // Anthropic直接でリクエスト
+        // その他のモデル（後方互換性）
         if (!this.anthropicService) {
           this.anthropicService = new AnthropicService(aiConfig.apiKey);
         }
@@ -103,6 +118,45 @@ export class AIService {
       throw new Error(
         `${i18n.t('messages.error.generation')} - ${i18n.t('messages.error.unknown')}`
       );
+    }
+  }
+
+  // AI接続をテストするメソッド
+  async testConnection(aiConfig: {
+    model: string;
+    apiKey: string;
+    vertexProjectId?: string;
+    vertexLocation?: string;
+  }): Promise<void> {
+    const model = aiConfig.model;
+
+    try {
+      if (model.startsWith('vertex-')) {
+        // VertexAI接続テスト
+        if (!aiConfig.vertexProjectId || !aiConfig.vertexLocation) {
+          throw new Error(
+            'VertexAI設定が不完全です。プロジェクトIDとロケーションを設定してください。'
+          );
+        }
+
+        await this.vertexAIService.testConnection({
+          projectId: aiConfig.vertexProjectId,
+          location: aiConfig.vertexLocation,
+        });
+      } else {
+        // Anthropic接続テスト
+        if (!aiConfig.apiKey) {
+          throw new Error('APIキーが設定されていません。');
+        }
+
+        const testService = new AnthropicService(aiConfig.apiKey);
+        await testService.testConnection();
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('AI接続テストに失敗しました。');
     }
   }
 

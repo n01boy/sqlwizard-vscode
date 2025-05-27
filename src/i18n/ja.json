@@ -48,12 +48,13 @@
       "title": "AI設定",
       "model": "モデル",
       "apiKey": "APIキー",
-      "apiKeyHint": "Anthropicモデル: Anthropic APIキー、Vertex AIモデル: Google Cloudサービスアカウントキー（JSON）",
+      "apiKeyHint": "Anthropic APIキー",
       "vertexProjectId": "Google CloudプロジェクトID",
       "vertexProjectIdHint": "Vertex AIモデルに必要",
       "vertexLocation": "Vertex AIロケーション",
       "vertexLocationHint": "Vertex AI用のGoogle Cloudリージョン",
-      "save": "設定を保存"
+      "save": "設定を保存",
+      "test": "AIをテスト"
     }
   },
   "query": {

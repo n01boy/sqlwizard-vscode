@@ -33,7 +33,7 @@ export class StorageService {
       language: 'en',
       databases: [],
       aiConfig: {
-        model: 'claude-3-7-sonnet-latest',
+        model: 'claude-4-0-latest',
         apiKey: '',
       },
     };

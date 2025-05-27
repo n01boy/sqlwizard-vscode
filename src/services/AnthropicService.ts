@@ -237,4 +237,37 @@ export class AnthropicService {
   createUserPrompt(request: QueryGenerationRequest): string {
     return `Generate a MySQL query for the following request:\n${request.prompt}`;
   }
+
+  async testConnection(): Promise<void> {
+    try {
+      console.log('Testing Anthropic API connection...');
+
+      // 簡単なテストリクエストを送信
+      const testData = {
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 50,
+        messages: [
+          {
+            role: 'user',
+            content:
+              'Hello, this is a connection test. Please respond with "Connection successful".',
+          },
+        ],
+      };
+
+      const response = await this.makeRequest(testData);
+
+      if (!response || !response.content || response.content.length === 0) {
+        throw new Error('Anthropic APIからの応答がありません。');
+      }
+
+      console.log('Anthropic API connection test successful');
+    } catch (error: unknown) {
+      console.error('Anthropic API connection test error:', error);
+      if (error instanceof Error) {
+        throw new Error(`Anthropic API接続テストに失敗しました: ${error.message}`);
+      }
+      throw new Error('Anthropic API接続テストに失敗しました: 不明なエラー');
+    }
+  }
 }

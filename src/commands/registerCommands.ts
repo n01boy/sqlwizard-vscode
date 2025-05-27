@@ -216,6 +216,48 @@ export function registerCommands(
     ),
 
     vscode.commands.registerCommand(
+      'sqlwizard.testAIConfig',
+      async (config: {
+        model: string;
+        apiKey: string;
+        vertexProjectId?: string;
+        vertexLocation?: string;
+      }) => {
+        const aiService = AIService.getInstance();
+
+        try {
+          const aiConfig: AIConfig = {
+            model: config.model as AIConfig['model'],
+            apiKey: config.apiKey || '',
+          };
+
+          // VertexAI設定がある場合は追加
+          if (config.vertexProjectId) {
+            aiConfig.vertexProjectId = config.vertexProjectId;
+          }
+          if (config.vertexLocation) {
+            aiConfig.vertexLocation = config.vertexLocation;
+          }
+
+          // AI接続をテスト（簡単なプロンプトで確認）
+          await aiService.testConnection(aiConfig);
+
+          return { success: true };
+        } catch (error) {
+          console.error('AI connection test error:', error);
+          let errorMessage = i18nService.t('messages.error.apiConnection');
+          if (error instanceof Error) {
+            errorMessage = error.message;
+          }
+          return {
+            success: false,
+            error: errorMessage,
+          };
+        }
+      }
+    ),
+
+    vscode.commands.registerCommand(
       'sqlwizard.generateSQL',
       async (params: { databaseId: string; prompt: string }) => {
         const dbService = DatabaseService.getInstance();

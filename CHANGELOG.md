@@ -1,5 +1,31 @@
 # Change Log
 
+## [0.3.7] - 2025-05-27
+
+### Added
+
+- AI connection test functionality with "Test AI" button next to "Save Settings"
+- VSCode notification system for AI test results (success/failure messages)
+- Debug logging for AI test operations to improve troubleshooting
+
+### Changed
+
+- Vertex AI location setting restricted to us-central1 only for simplified configuration
+- Improved user experience with clear success/failure notifications for AI tests
+- Enhanced error handling and messaging for AI connection tests
+
+### 追加
+
+- 「設定を保存」の隣に「AIをテスト」ボタンによるAI接続テスト機能
+- AIテスト結果（成功・失敗メッセージ）用のVSCode通知システム
+- トラブルシューティング改善のためのAIテスト操作のデバッグログ
+
+### 変更
+
+- 設定簡素化のためVertex AIロケーション設定をus-central1のみに制限
+- AIテストの明確な成功・失敗通知によるユーザーエクスペリエンスの向上
+- AI接続テストのエラー処理とメッセージングの強化
+
 ## [0.3.6] - 2025-05-23
 
 ### Fixed
