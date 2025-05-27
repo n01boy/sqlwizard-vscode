@@ -28,7 +28,6 @@ function saveAIConfig() {
   const aiModelDropdown = document.getElementById('ai-model');
   const apiKeyInput = document.getElementById('api-key');
   const vertexProjectIdInput = document.getElementById('vertex-project-id');
-  const vertexLocationInput = document.getElementById('vertex-location');
 
   const config = {
     model: aiModelDropdown.value,
@@ -37,7 +36,6 @@ function saveAIConfig() {
   // Vertex AI設定がある場合は追加
   if (aiModelDropdown.value.startsWith('vertex-')) {
     config.vertexProjectId = vertexProjectIdInput.value;
-    config.vertexLocation = vertexLocationInput.value;
     // VertexAIの場合はAPIキーは不要
     config.apiKey = '';
   } else {
@@ -56,7 +54,6 @@ function updateAIConfig(message) {
   const aiModelDropdown = document.getElementById('ai-model');
   const apiKeyInput = document.getElementById('api-key');
   const vertexProjectIdInput = document.getElementById('vertex-project-id');
-  const vertexLocationInput = document.getElementById('vertex-location');
 
   if (aiModelDropdown) aiModelDropdown.value = message.model;
   if (apiKeyInput) apiKeyInput.value = message.apiKey || '';
@@ -64,9 +61,6 @@ function updateAIConfig(message) {
   // VertexAI設定がある場合は更新
   if (message.vertexProjectId && vertexProjectIdInput) {
     vertexProjectIdInput.value = message.vertexProjectId;
-  }
-  if (message.vertexLocation && vertexLocationInput) {
-    vertexLocationInput.value = message.vertexLocation;
   }
 
   // VertexAI設定の表示/非表示を更新
@@ -80,13 +74,11 @@ function testAIConfig() {
   const aiModelDropdown = document.getElementById('ai-model');
   const apiKeyInput = document.getElementById('api-key');
   const vertexProjectIdInput = document.getElementById('vertex-project-id');
-  const vertexLocationInput = document.getElementById('vertex-location');
 
   console.log('Elements found:', {
     aiModelDropdown: !!aiModelDropdown,
     apiKeyInput: !!apiKeyInput,
     vertexProjectIdInput: !!vertexProjectIdInput,
-    vertexLocationInput: !!vertexLocationInput,
   });
 
   const config = {
@@ -96,7 +88,6 @@ function testAIConfig() {
   // Vertex AI設定がある場合は追加
   if (aiModelDropdown.value.startsWith('vertex-')) {
     config.vertexProjectId = vertexProjectIdInput.value;
-    config.vertexLocation = vertexLocationInput.value;
     config.apiKey = '';
   } else {
     // Anthropicの場合はAPIキーが必要
@@ -122,26 +113,81 @@ function testAIConfig() {
   });
 }
 
+// AI設定変更時にテストボタンを無効化
+function disableTestButton() {
+  const testButton = document.getElementById('test-ai-config');
+  if (testButton) {
+    testButton.disabled = true;
+    testButton.textContent =
+      document.documentElement.lang === 'ja'
+        ? 'AIをテスト（設定を保存してください）'
+        : 'Test AI (Save settings first)';
+  }
+}
+
+// AI設定保存時にテストボタンを有効化
+function enableTestButton() {
+  const testButton = document.getElementById('test-ai-config');
+  if (testButton) {
+    testButton.disabled = false;
+    testButton.textContent = document.documentElement.lang === 'ja' ? 'AIをテスト' : 'Test AI';
+  }
+}
+
 // AI設定のイベントリスナーを初期化
 function initializeAIEventListeners() {
+  console.log('initializeAIEventListeners called');
+
   // AI model selection change
   const aiModelDropdown = document.getElementById('ai-model');
+  console.log('AI model dropdown found:', !!aiModelDropdown);
   if (aiModelDropdown) {
-    aiModelDropdown.addEventListener('change', toggleVertexConfig);
+    aiModelDropdown.addEventListener('change', () => {
+      console.log('AI model changed');
+      toggleVertexConfig();
+      disableTestButton();
+    });
+  }
+
+  // API Key input change
+  const apiKeyInput = document.getElementById('api-key');
+  console.log('API key input found:', !!apiKeyInput);
+  if (apiKeyInput) {
+    apiKeyInput.addEventListener('input', disableTestButton);
+  }
+
+  // Vertex Project ID input change
+  const vertexProjectIdInput = document.getElementById('vertex-project-id');
+  console.log('Vertex project ID input found:', !!vertexProjectIdInput);
+  if (vertexProjectIdInput) {
+    vertexProjectIdInput.addEventListener('input', disableTestButton);
   }
 
   // AI settings
   const saveAiConfigButton = document.getElementById('save-ai-config');
+  console.log('Save AI config button found:', !!saveAiConfigButton);
   if (saveAiConfigButton) {
-    saveAiConfigButton.addEventListener('click', saveAIConfig);
+    saveAiConfigButton.addEventListener('click', () => {
+      console.log('Save AI config button clicked');
+      saveAIConfig();
+    });
+  } else {
+    console.error('Save AI config button not found!');
   }
 
   // Test AI settings
   const testAiConfigButton = document.getElementById('test-ai-config');
+  console.log('Test AI config button found:', !!testAiConfigButton);
   if (testAiConfigButton) {
-    testAiConfigButton.addEventListener('click', testAIConfig);
+    testAiConfigButton.addEventListener('click', () => {
+      console.log('Test AI config button clicked');
+      testAIConfig();
+    });
+  } else {
+    console.error('Test AI config button not found!');
   }
 
   // 初期状態でVertexAI設定を非表示にする
   toggleVertexConfig();
+  console.log('initializeAIEventListeners completed');
 }

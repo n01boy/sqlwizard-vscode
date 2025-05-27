@@ -38,11 +38,19 @@ function initializeEventListeners() {
 
   // AI設定のイベントリスナーを初期化
   console.log('Calling initializeAIEventListeners...');
-  initializeAIEventListeners();
+  if (typeof initializeAIEventListeners === 'function') {
+    initializeAIEventListeners();
+  } else {
+    console.error('initializeAIEventListeners function not found!');
+  }
 
   // データベース設定のイベントリスナーを初期化
   console.log('Calling initializeDatabaseEventListeners...');
-  initializeDatabaseEventListeners();
+  if (typeof initializeDatabaseEventListeners === 'function') {
+    initializeDatabaseEventListeners();
+  } else {
+    console.error('initializeDatabaseEventListeners function not found!');
+  }
 
   console.log('initializeEventListeners completed');
 }
@@ -334,6 +342,15 @@ window.addEventListener('message', (event) => {
 
     case 'updateAIConfig':
       updateAIConfig(message);
+      break;
+
+    case 'aiConfigSaved':
+      // AI設定保存後にテストボタンを有効化
+      const testButton = document.getElementById('test-ai-config');
+      if (testButton) {
+        testButton.disabled = false;
+        testButton.textContent = document.documentElement.lang === 'ja' ? 'AIをテスト' : 'Test AI';
+      }
       break;
 
     case 'showDatabaseError':

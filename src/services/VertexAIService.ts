@@ -4,6 +4,8 @@ import { I18nService } from './I18nService';
 
 // VertexAI SDK のインポート
 const { VertexAI } = require('@google-cloud/vertexai');
+// Anthropic Vertex SDK のインポート
+import { AnthropicVertex } from '@anthropic-ai/vertex-sdk';
 
 export class VertexAIService {
   // Claude Sonnetモデル用のリージョン定数
@@ -17,6 +19,10 @@ export class VertexAIService {
     // モデル名をVertex AI用に変換
     if (model === 'vertex-gemini-2-0-flash') {
       return 'gemini-2.0-flash';
+    } else if (model === 'vertex-gemini-2-5-pro') {
+      return 'gemini-2.5-pro-preview-05-06';
+    } else if (model === 'vertex-gemini-2-5-flash') {
+      return 'gemini-2.5-flash-preview-05-20';
     } else if (model === 'vertex-claude-sonnet-4') {
       return 'claude-sonnet-4@20250514';
     } else if (model === 'vertex-claude-3-7-sonnet') {
@@ -28,15 +34,90 @@ export class VertexAIService {
   }
 
   private getLocation(modelName: string): string {
-    // Claude Sonnetモデルの場合はus-east5を使用
-    if (modelName.includes('claude')) {
-      return VertexAIService.CLAUDE_REGION;
+    // Claudeモデルの場合はus-east5、Geminiモデルの場合はus-central1
+    if (this.isClaudeModel(modelName)) {
+      return 'us-east5';
     }
+    return 'us-central1';
+  }
 
-    // その他のモデルは設定されたlocationを使用
-    const { StorageService } = require('./StorageService');
-    const aiConfig = StorageService.getInstance().getAIConfig();
-    return aiConfig.location || 'us-central1';
+  private isClaudeModel(modelName: string): boolean {
+    return modelName.includes('claude');
+  }
+
+  async makeClaudeVertexRequest(params: {
+    systemPrompt: string;
+    userPrompt: string;
+    projectId: string;
+    location: string;
+  }): Promise<string> {
+    try {
+      const modelName = this.getModelName();
+      const location = this.getLocation(modelName);
+
+      console.log(
+        `Making Claude Vertex request to project: ${params.projectId}, location: ${location}, model: ${modelName}`
+      );
+
+      // AnthropicVertex クライアントの初期化
+      const client = new AnthropicVertex({
+        projectId: params.projectId,
+        region: location,
+      });
+
+      // エディタを開く処理を行う
+      await vscode.commands.executeCommand('sqlwizard.prepareStreamingEditor');
+
+      // ストリーミング応答を生成
+      const stream = await client.messages.create({
+        model: modelName,
+        max_tokens: 8192,
+        temperature: 0.1,
+        system: params.systemPrompt,
+        messages: [
+          {
+            role: 'user',
+            content: params.userPrompt,
+          },
+        ],
+        stream: true,
+      });
+
+      let fullResponse = '';
+      console.log('--- Claude Vertex ストリーミング開始 ---');
+
+      for await (const chunk of stream) {
+        if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+          const chunkText = chunk.delta.text;
+          fullResponse += chunkText;
+
+          // ```sql や ``` を除外
+          const cleanedText = chunkText.replace(/```sql|```/g, '');
+
+          // SQLブロックの開始を検出
+          if (
+            cleanedText.includes('--') ||
+            cleanedText.includes('SELECT') ||
+            cleanedText.includes('INSERT') ||
+            cleanedText.includes('UPDATE') ||
+            cleanedText.includes('DELETE')
+          ) {
+            await vscode.commands.executeCommand('sqlwizard.appendToStreamingEditor', cleanedText);
+          }
+        }
+      }
+
+      console.log('--- Claude Vertex ストリーミング終了 ---');
+      console.log('最終的な完全な応答:\n', fullResponse);
+
+      return fullResponse;
+    } catch (error: unknown) {
+      console.error('Claude Vertex request error:', error);
+      if (error instanceof Error) {
+        throw new Error(`Claude Vertex API request failed: ${error.message}`);
+      }
+      throw new Error('Claude Vertex API request failed: Unknown error');
+    }
   }
 
   async makeVertexAIRequest(params: {
@@ -45,9 +126,14 @@ export class VertexAIService {
     projectId: string;
     location: string;
   }): Promise<string> {
+    const modelName = this.getModelName();
+
+    // Claudeモデルの場合はAnthropicVertexを使用
+    if (this.isClaudeModel(modelName)) {
+      return this.makeClaudeVertexRequest(params);
+    }
+
     try {
-      // モデル名を動的に決定
-      const modelName = this.getModelName();
       // モデルに応じたリージョンを決定
       const location = this.getLocation(modelName);
 
@@ -205,12 +291,49 @@ export class VertexAIService {
   }
 
   async testConnection(params: { projectId: string; location: string }): Promise<void> {
-    try {
-      // モデル名を動的に決定
-      const modelName = this.getModelName();
-      // モデルに応じたリージョンを決定
-      const location = this.getLocation(modelName);
+    const modelName = this.getModelName();
+    const location = this.getLocation(modelName);
 
+    // Claudeモデルの場合はAnthropicVertexでテスト
+    if (this.isClaudeModel(modelName)) {
+      try {
+        console.log(
+          `Testing Claude Vertex connection to project: ${params.projectId}, location: ${location}, model: ${modelName}`
+        );
+
+        const client = new AnthropicVertex({
+          projectId: params.projectId,
+          region: location,
+        });
+
+        const response = await client.messages.create({
+          model: modelName,
+          max_tokens: 100,
+          messages: [
+            {
+              role: 'user',
+              content:
+                'Hello, this is a connection test. Please respond with "Connection successful".',
+            },
+          ],
+        });
+
+        if (!response.content || response.content.length === 0) {
+          throw new Error('Claude Vertexからの応答がありません。');
+        }
+
+        console.log('Claude Vertex connection test successful');
+        return;
+      } catch (error: unknown) {
+        console.error('Claude Vertex connection test error:', error);
+        if (error instanceof Error) {
+          throw new Error(`Claude Vertex接続テストに失敗しました: ${error.message}`);
+        }
+        throw new Error('Claude Vertex接続テストに失敗しました: 不明なエラー');
+      }
+    }
+
+    try {
       console.log(
         `Testing VertexAI connection to project: ${params.projectId}, location: ${location}, model: ${modelName}`
       );

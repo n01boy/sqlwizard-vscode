@@ -205,8 +205,13 @@ export function registerCommands(
         if (config.vertexProjectId) {
           aiConfig.vertexProjectId = config.vertexProjectId;
         }
-        if (config.vertexLocation) {
-          aiConfig.vertexLocation = config.vertexLocation;
+        // vertexLocationはモデルに応じて設定
+        if (config.model.startsWith('vertex-')) {
+          if (config.model.includes('claude')) {
+            aiConfig.vertexLocation = 'us-east5';
+          } else {
+            aiConfig.vertexLocation = 'us-central1';
+          }
         }
 
         await storageService.updateAIConfig(aiConfig);
@@ -235,8 +240,13 @@ export function registerCommands(
           if (config.vertexProjectId) {
             aiConfig.vertexProjectId = config.vertexProjectId;
           }
-          if (config.vertexLocation) {
-            aiConfig.vertexLocation = config.vertexLocation;
+          // vertexLocationはモデルに応じて設定
+          if (config.model.startsWith('vertex-')) {
+            if (config.model.includes('claude')) {
+              aiConfig.vertexLocation = 'us-east5';
+            } else {
+              aiConfig.vertexLocation = 'us-central1';
+            }
           }
 
           // AI接続をテスト（簡単なプロンプトで確認）

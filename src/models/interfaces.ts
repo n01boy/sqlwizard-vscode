@@ -23,7 +23,11 @@ export interface AIConfig {
     | 'claude-sonnet-4-20250514'
     | 'claude-3-7-sonnet-20250219'
     | 'claude-3-5-sonnet-20241022'
-    | 'vertex-gemini-2-0-flash';
+    | 'vertex-gemini-2-0-flash'
+    | 'vertex-gemini-2-5-pro'
+    | 'vertex-gemini-2-5-flash'
+    | 'vertex-claude-sonnet-4'
+    | 'vertex-claude-3-7-sonnet';
   apiKey: string;
   vertexProjectId?: string;
   vertexLocation?: string;

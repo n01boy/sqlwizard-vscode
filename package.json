@@ -2,7 +2,7 @@
   "name": "sqlwizard-vscode",
   "displayName": "SQL Wizard",
   "description": "AI-powered SQL generator with database management",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "publisher": "n01boy",
   "repository": {
     "type": "git",
@@ -126,6 +126,7 @@
     "test": "vscode-test"
   },
   "dependencies": {
+    "@anthropic-ai/vertex-sdk": "^0.11.4",
     "@google-cloud/vertexai": "^1.8.0",
     "@vscode/webview-ui-toolkit": "^1.4.0",
     "i18next": "^23.10.0",

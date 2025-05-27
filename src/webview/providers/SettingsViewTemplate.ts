@@ -47,6 +47,8 @@ export function getSettingsViewHtml(webview: vscode.Webview, extensionUri: vscod
                             <option value="claude-3-7-sonnet-20250219">Claude 3.7 Sonnet (2025-02-19)</option>
                             <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (2024-10-22)</option>
                             <option value="vertex-gemini-2-0-flash">Gemini 2.0 Flash (Vertex AI)</option>
+                            <option value="vertex-gemini-2-5-pro">Gemini 2.5 Pro (Vertex AI)</option>
+                            <option value="vertex-gemini-2-5-flash">Gemini 2.5 Flash (Vertex AI)</option>
                             <option value="vertex-claude-sonnet-4">Claude Sonnet 4 (Vertex AI)</option>
                             <option value="vertex-claude-3-7-sonnet">Claude 3.7 Sonnet (Vertex AI)</option>
                         </select>
@@ -63,14 +65,6 @@ export function getSettingsViewHtml(webview: vscode.Webview, extensionUri: vscod
                             <label for="vertex-project-id">${i18n.t('settings.ai.vertexProjectId')}</label>
                             <input type="text" id="vertex-project-id">
                             <small class="field-hint">${i18n.t('settings.ai.vertexProjectIdHint')}</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="vertex-location">${i18n.t('settings.ai.vertexLocation')}</label>
-                            <select id="vertex-location">
-                                <option value="us-central1" selected>us-central1</option>
-                                <option value="us-east5">us-east5</option>
-                            </select>
-                            <small class="field-hint">${i18n.t('settings.ai.vertexLocationHint')}</small>
                         </div>
                     </div>
                     <div class="form-group">

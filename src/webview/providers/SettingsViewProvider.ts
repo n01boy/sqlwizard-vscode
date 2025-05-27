@@ -123,12 +123,14 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
             if (message.vertexProjectId) {
               aiConfigData.vertexProjectId = message.vertexProjectId;
             }
-            if (message.vertexLocation) {
-              aiConfigData.vertexLocation = message.vertexLocation;
-            }
 
             await vscode.commands.executeCommand('sqlwizard.updateAIConfig', aiConfigData);
             vscode.window.showInformationMessage(i18n.t('messages.success.saved'));
+
+            // AI設定保存後にテストボタンを有効化するメッセージを送信
+            webview.postMessage({
+              command: 'aiConfigSaved',
+            });
           } catch (error) {
             vscode.window.showErrorMessage(i18n.t('messages.error.validation'));
           }
@@ -145,9 +147,6 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
             // VertexAI設定がある場合は追加
             if (message.vertexProjectId) {
               aiConfigData.vertexProjectId = message.vertexProjectId;
-            }
-            if (message.vertexLocation) {
-              aiConfigData.vertexLocation = message.vertexLocation;
             }
 
             console.log('Executing testAIConfig command with data:', aiConfigData);
@@ -254,7 +253,6 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
         model: aiConfig.model,
         apiKey: aiConfig.apiKey || '',
         vertexProjectId: aiConfig.vertexProjectId || '',
-        vertexLocation: aiConfig.vertexLocation || 'us-central1',
       });
     }
   }
