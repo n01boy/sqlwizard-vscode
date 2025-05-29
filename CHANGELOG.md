@@ -1,5 +1,17 @@
 # Change Log
 
+## [0.5.0] - 2025-05-29
+
+### Changed
+
+- Minor version update with stability improvements
+- Enhanced overall system performance and reliability
+
+### 変更
+
+- 安定性向上を含むマイナーバージョンアップデート
+- システム全体のパフォーマンスと信頼性の強化
+
 ## [0.4.1] - 2025-05-27
 
 ### Added
