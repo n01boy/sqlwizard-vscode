@@ -289,12 +289,16 @@ function showConnectionSuccess(message) {
   if (connectionErrorMessage) {
     connectionErrorMessage.textContent = message;
     connectionErrorMessage.style.display = 'block';
-    connectionErrorMessage.style.color = '#4CAF50'; // 成功時は緑色
+
+    // エラーメッセージクラスを削除し、成功メッセージクラスを追加
+    connectionErrorMessage.classList.remove('error-message');
+    connectionErrorMessage.classList.add('success-message');
 
     // 3秒後に自動的に非表示にする
     setTimeout(() => {
       connectionErrorMessage.style.display = 'none';
-      connectionErrorMessage.style.color = ''; // 色をリセット
+      connectionErrorMessage.classList.remove('success-message');
+      connectionErrorMessage.classList.add('error-message'); // 元に戻す
     }, 3000);
   }
 }

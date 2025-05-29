@@ -51,6 +51,10 @@ export class VertexAIService {
     projectId: string;
     location: string;
   }): Promise<string> {
+    let fullResponse = '';
+    let textBuffer = '';
+    let lastSendTime = Date.now();
+
     try {
       const modelName = this.getModelName();
       const location = this.getLocation(modelName);
@@ -83,36 +87,112 @@ export class VertexAIService {
         stream: true,
       });
 
-      let fullResponse = '';
       console.log('--- Claude Vertex ストリーミング開始 ---');
 
-      for await (const chunk of stream) {
-        if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
-          const chunkText = chunk.delta.text;
-          fullResponse += chunkText;
+      // タイムアウト設定（120秒に延長）
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('ストリーミングがタイムアウトしました')), 120000);
+      });
 
-          // ```sql や ``` を除外
-          const cleanedText = chunkText.replace(/```sql|```/g, '');
+      // ストリーミング処理とタイムアウトの競合
+      await Promise.race([
+        (async () => {
+          try {
+            for await (const chunk of stream) {
+              console.log('Claude Vertex chunk:', JSON.stringify(chunk, null, 2));
 
-          // SQLブロックの開始を検出
-          if (
-            cleanedText.includes('--') ||
-            cleanedText.includes('SELECT') ||
-            cleanedText.includes('INSERT') ||
-            cleanedText.includes('UPDATE') ||
-            cleanedText.includes('DELETE')
-          ) {
-            await vscode.commands.executeCommand('sqlwizard.appendToStreamingEditor', cleanedText);
+              // 複数のチャンクタイプに対応
+              let chunkText = '';
+
+              if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') {
+                chunkText = chunk.delta.text;
+              } else if (
+                chunk.type === 'content_block_start' &&
+                chunk.content_block?.type === 'text'
+              ) {
+                chunkText = chunk.content_block.text || '';
+              } else if (chunk.type === 'message_delta' && chunk.delta) {
+                // メッセージデルタの場合 - 実際の構造に基づいて調整
+                const delta = chunk.delta as any;
+                if (delta.content) {
+                  if (Array.isArray(delta.content)) {
+                    chunkText = delta.content.map((c: any) => c.text || '').join('');
+                  } else if (delta.content.text) {
+                    chunkText = delta.content.text;
+                  }
+                }
+              }
+
+              if (chunkText) {
+                console.log('Claude Vertex chunk text:', JSON.stringify(chunkText));
+                fullResponse += chunkText;
+
+                // ```sql や ``` を除外
+                const cleanedText = chunkText.replace(/```sql|```/g, '');
+                textBuffer += cleanedText;
+
+                // バッファリング: 50文字以上溜まったか、500ms経過したらエディタに送信
+                const currentTime = Date.now();
+                const shouldSend = textBuffer.length >= 50 || currentTime - lastSendTime >= 500;
+
+                if (shouldSend && textBuffer.trim()) {
+                  console.log('Sending buffered text to editor:', JSON.stringify(textBuffer));
+                  try {
+                    await vscode.commands.executeCommand(
+                      'sqlwizard.appendToStreamingEditor',
+                      textBuffer
+                    );
+                    textBuffer = '';
+                    lastSendTime = currentTime;
+                  } catch (editorError) {
+                    console.warn(
+                      'エディタへの追記でエラーが発生しましたが、処理を続行します:',
+                      editorError
+                    );
+                  }
+                }
+              } else {
+                console.log('Claude Vertex: Skipping chunk type:', chunk.type);
+              }
+            }
+          } catch (streamError) {
+            console.error('ストリーミング処理中にエラーが発生:', streamError);
+            throw streamError;
           }
+        })(),
+        timeoutPromise,
+      ]);
+
+      // ストリーミング終了後、残ったバッファの内容をエディタに送信
+      if (textBuffer.trim()) {
+        console.log('Sending final buffered text to editor:', JSON.stringify(textBuffer));
+        try {
+          await vscode.commands.executeCommand('sqlwizard.appendToStreamingEditor', textBuffer);
+        } catch (editorError) {
+          console.warn(
+            'エディタへの最終追記でエラーが発生しましたが、処理を続行します:',
+            editorError
+          );
         }
       }
 
       console.log('--- Claude Vertex ストリーミング終了 ---');
       console.log('最終的な完全な応答:\n', fullResponse);
 
+      if (!fullResponse.trim()) {
+        throw new Error('Claude Vertexから有効な応答を受信できませんでした');
+      }
+
       return fullResponse;
     } catch (error: unknown) {
       console.error('Claude Vertex request error:', error);
+
+      // 部分的な応答がある場合はそれを返す
+      if (fullResponse.trim()) {
+        console.log('部分的な応答を返します:', fullResponse);
+        return fullResponse;
+      }
+
       if (error instanceof Error) {
         throw new Error(`Claude Vertex API request failed: ${error.message}`);
       }
@@ -132,6 +212,8 @@ export class VertexAIService {
     if (this.isClaudeModel(modelName)) {
       return this.makeClaudeVertexRequest(params);
     }
+
+    let fullResponse = '';
 
     try {
       // モデルに応じたリージョンを決定
@@ -175,41 +257,71 @@ export class VertexAIService {
 
       // ストリーミング応答を生成
       const result = await model.generateContentStream(request);
-      let fullResponse = '';
 
       console.log('--- VertexAI ストリーミング開始 ---');
 
-      // ストリームからデータチャンクを順次処理
-      for await (const item of result.stream) {
-        // 応答の構造からテキストコンテンツを抽出
-        const chunkText = item.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      // タイムアウト設定（120秒に延長）
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('ストリーミングがタイムアウトしました')), 120000);
+      });
 
-        if (chunkText) {
-          fullResponse += chunkText;
+      // ストリーミング処理とタイムアウトの競合
+      await Promise.race([
+        (async () => {
+          try {
+            // ストリームからデータチャンクを順次処理
+            for await (const item of result.stream) {
+              // 応答の構造からテキストコンテンツを抽出
+              const chunkText = item.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-          // ```sql や ``` を除外
-          const cleanedText = chunkText.replace(/```sql|```/g, '');
+              if (chunkText) {
+                fullResponse += chunkText;
 
-          // SQLブロックの開始を検出（-- で始まるコメント）
-          if (
-            cleanedText.includes('--') ||
-            cleanedText.includes('SELECT') ||
-            cleanedText.includes('INSERT') ||
-            cleanedText.includes('UPDATE') ||
-            cleanedText.includes('DELETE')
-          ) {
-            // できるだけ早く表示するために、各チャンクごとに追加
-            await vscode.commands.executeCommand('sqlwizard.appendToStreamingEditor', cleanedText);
+                // ```sql や ``` を除外
+                const cleanedText = chunkText.replace(/```sql|```/g, '');
+
+                // 全てのテキストをエディタに送信（フィルタリングを削除）
+                if (cleanedText.trim()) {
+                  try {
+                    // できるだけ早く表示するために、各チャンクごとに追加
+                    await vscode.commands.executeCommand(
+                      'sqlwizard.appendToStreamingEditor',
+                      cleanedText
+                    );
+                  } catch (editorError) {
+                    console.warn(
+                      'エディタへの追記でエラーが発生しましたが、処理を続行します:',
+                      editorError
+                    );
+                  }
+                }
+              }
+            }
+          } catch (streamError) {
+            console.error('ストリーミング処理中にエラーが発生:', streamError);
+            throw streamError;
           }
-        }
-      }
+        })(),
+        timeoutPromise,
+      ]);
 
       console.log('--- VertexAI ストリーミング終了 ---');
       console.log('最終的な完全な応答:\n', fullResponse);
 
+      if (!fullResponse.trim()) {
+        throw new Error('VertexAIから有効な応答を受信できませんでした');
+      }
+
       return fullResponse;
     } catch (error: unknown) {
       console.error('VertexAI request error:', error);
+
+      // 部分的な応答がある場合はそれを返す
+      if (fullResponse.trim()) {
+        console.log('部分的な応答を返します:', fullResponse);
+        return fullResponse;
+      }
+
       if (error instanceof Error) {
         throw new Error(`VertexAI API request failed: ${error.message}`);
       }
